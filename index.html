@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <section class="block_test1">
+        <p>test #1</p>
+        <a href="https://goo.gl/maps/8ooEJHmLQ18YnLPy8" target="_blank" class="link_test1">Makarivske BTI#1
+
+        </a>
+        <a href="https://goo.gl/maps/Pnjkkia657QHmVEq9" target="_blank" class="link_test2">Fastivske BTI#2</a>
+        <a href="https://goo.gl/maps/VNAgqCYgGn5GcqKg8" target="_blank" class="link_test3">Obuhivske BTI#3</a>
+        <a href="https://goo.gl/maps/FD2d37WixYRCozar7" target="_blank" class="link_test4">Kiev BTI#4</a>
+    </section>
+    <p>test #2</p>
+    <section class="block_test2">
+        <div class="grid">
+            <a href="#box" class="link_test1" onclick="openbox('box1'); return false">Makarivske BTI#1></a>
+            <a href="#box" class="link_test2" onclick="openbox('box2'); return false">Fastivske BTI#2</a>
+            <a href="#box" class="link_test3" onclick="openbox('box3'); return false">Obuhivske BTI#3</a>
+            <a href="#box" class="link_test4" onclick="openbox('box4'); return false">Kiev BTI#4</a>
+        </div>
+
+        <div id="box1" style="display: none;">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d162565.15109935726!2d29.5270925328125!3d50.45822590000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x472b412224c2af83%3A0x7d58b0d17155ea43!2z0JzQkNCa0JDQoNCG0JLQodCs0JrQlSDQkdCu0KDQniDQotCV0KXQndCG0KfQndCe0Icg0IbQndCS0JXQndCi0JDQoNCG0JfQkNCm0IbQhw!5e0!3m2!1sru!2sua!4v1660331513352!5m2!1sru!2sua"
+                width="600" height="400" style="border:0;" allowfullscreen="" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <p>text area</p>
+        </div>
+        <div id="box2" style="display: none;">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d163862.5590097302!2d29.717370372338035!3d50.079687099999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40d3551bc5015379%3A0x93772fd10a852880!2z0KTQsNGB0YLQvtCy0YHQutC-0LUg0LHRjtGA0L4g0YLQtdGF0L3QuNGH0LXRgdC60L7QuSDQuNC90LLQtdC90YLQsNGA0LjQt9Cw0YbQuNC4!5e0!3m2!1sru!2sua!4v1660331471864!5m2!1sru!2sua"
+                width="600" height="400" style="border:0;" allowfullscreen="" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <p>text area</p>
+        </div>
+        <div id="box3" style="display: none;">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2558.6206900286443!2d30.622486034942494!3d50.11210635378067!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40d497ecc5dc8043%3A0xce94542695385101!2sBti%20Obukhiv!5e0!3m2!1sru!2sua!4v1660331575262!5m2!1sru!2sua"
+                width="600" height="400" style="border:0;" allowfullscreen="" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <p>text area</p>
+        </div>
+        <div id="box4" style="display: none;">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2540.3886047930214!2d30.4448683159861!3d50.452487895098805!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40d4ce6390bf1fb5%3A0x4fadf5acf1938d1e!2sBti%20Kyiv!5e0!3m2!1sru!2sua!4v1660331603626!5m2!1sru!2sua"
+                width="600" height="400" style="border:0;" allowfullscreen="" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <p>text area</p>
+        </div>
+    </section>
+</body>
+<script>
+    function openbox(box1) {
+        display = document.getElementById(box1).style.display;
+        if (display == 'none') {
+            document.getElementById(box1).style.display = 'block';
+        } else {
+            document.getElementById(box1).style.display = 'none';
+        }
+    }
+    function openbox(box2) {
+        display = document.getElementById(box2).style.display;
+        if (display == 'none') {
+            document.getElementById(box2).style.display = 'block';
+        } else {
+            document.getElementById(box2).style.display = 'none';
+        }
+    }
+    function openbox(box3) {
+        display = document.getElementById(box3).style.display;
+        if (display == 'none') {
+            document.getElementById(box3).style.display = 'block';
+        } else {
+            document.getElementById(box3).style.display = 'none';
+        }
+    }
+    function openbox(box4) {
+        display = document.getElementById(box4).style.display;
+        if (display == 'none') {
+            document.getElementById(box4).style.display = 'block';
+        } else {
+            document.getElementById(box4).style.display = 'none';
+        }
+    }
+</script>
+
+</html>
