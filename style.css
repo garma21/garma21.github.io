@@ -1,3 +1,7 @@
+:root {
+    --bs-white: #fff;
+}
+
 body {
     background-color: rgb(91, 91, 91);
 
@@ -49,13 +53,13 @@ body {
 a {
     left: 50%;
     text-decoration: none;
-    color: white;
+    color: #d0c09f;
     transition: .5s;
 
 }
 
 a:hover {
-    color: black;
+    color: #fff;
 }
 
 #box1 {
