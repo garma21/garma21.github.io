@@ -14,6 +14,9 @@
         max-width: 1400px;
     }
 } */
+html {
+    scroll-behavior: smooth;
+}
 
 /* /////////////////////////// */
 body {
@@ -475,6 +478,22 @@ a .butt_contact:hover {
     background: #2A2A2A;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.47);
     border-radius: 29px;
+
+}
+
+.block_icon1:hover>.icon1_svg,
+.block_icon2:hover>.icon2_svg,
+.block_icon3:hover>.icon3_svg,
+.block_icon4:hover>.icon1_svg,
+.block_icon5:hover>.icon2_svg {
+    width: 100px;
+    height: 100px;
+}
+
+.block_icon1:hover>.icon1_text,
+.block_icon2:hover>.icon1_text,
+.block_icon3:hover>.icon1_text {
+    top: 101px;
 }
 
 .icon1_svg,
@@ -487,6 +506,7 @@ a .butt_contact:hover {
     left: 50%;
     transform: translate(-50%, 0);
     z-index: 2;
+    transition: all 1500ms ease .1s;
 }
 
 .icon1_text {
@@ -512,6 +532,7 @@ a .butt_contact:hover {
     /* text */
 
     color: #E4E4E4;
+    transition: all 1500ms ease;
 }
 
 .about_me {
