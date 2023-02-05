@@ -1312,7 +1312,7 @@ body {
     }
 }
 
-@media screen and (max-width: 376px) {
+@media screen and (max-width: 425px) {
 
     html {
         width: 100%;
