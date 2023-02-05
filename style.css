@@ -851,8 +851,8 @@ body {
 
     .block2_text {
         top: 66px;
-        width: 766px;
-        height: 382px;
+        width: 374px;
+        height: 210px;
         font-size: 64px;
         line-height: 76px;
     }
@@ -1338,7 +1338,7 @@ body {
         top: 0px;
         left: 50%;
         transform: translateX(-50%);
-        /* border: 1px solid red; */
+        /* border: 0px solid red; */
     }
 
     .block1 {
@@ -1380,7 +1380,7 @@ body {
 
     .block2_text {
         top: 0px;
-        width: 420px;
+        width: 375px;
         height: 210px;
         font-size: 36px;
         line-height: 43px;
