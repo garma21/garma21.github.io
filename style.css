@@ -802,8 +802,8 @@ body {
         padding: 0;
         margin: 0;
 
-        max-width: 765px;
-        max-height: 11150px;
+        width: 765px;
+        height: 11100px;
         position: absolute;
         top: 0px;
         left: 50%;
@@ -851,10 +851,10 @@ body {
 
     .block2_text {
         top: 66px;
-        width: 374px;
-        height: 210px;
-        font-size: 64px;
-        line-height: 76px;
+        width: 766px;
+        height: 382px;
+        font-size: 36px;
+        line-height: 43px;
     }
 
     .bg1 {
@@ -1756,7 +1756,7 @@ body {
 
     .div4_text {
         position: absolute;
-        width: 375px;
+        width: 365px;
         height: 154px;
         left: 50%;
         transform: translateX(-50%);
@@ -1776,7 +1776,7 @@ body {
 
     .div5_text {
         position: absolute;
-        width: 375px;
+        width: 325px;
         height: 123px;
         left: 50%;
         transform: translateX(-50%);
