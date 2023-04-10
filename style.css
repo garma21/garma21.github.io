@@ -557,7 +557,22 @@ a .butt_contact:hover {
     /* text */
     border-radius: 50%;
     border: 89px solid #E4E4E4;
-    filter: drop-shadow(0px 4px 70px rgba(255, 255, 255, 0.25));
+    animation: cir1_blur 4s infinite linear;
+    /* filter: drop-shadow(0px 4px 70px rgba(255, 255, 255, 0.25)); */
+}
+
+@keyframes cir1_blur {
+    0% {
+        filter: drop-shadow(0px 0px 0px rgba(255, 255, 255, 0.42));
+    }
+
+    50% {
+        filter: drop-shadow(0px 0px 52px rgba(255, 255, 255, 0.42));
+    }
+
+    100% {
+        filter: drop-shadow(0px 0px 0px rgba(255, 255, 255, 0.42));
+    }
 }
 
 .bg_circle2 {
@@ -572,7 +587,22 @@ a .butt_contact:hover {
     /* blu */
     border-radius: 50%;
     border: 55px solid #00C4F0;
-    filter: drop-shadow(0px 4px 70px rgba(0, 193, 236, 0.25));
+    animation: cir2_blur 6s infinite linear;
+    /* filter: drop-shadow(0px 4px 70px rgba(0, 193, 236, 0.25)); */
+}
+
+@keyframes cir2_blur {
+    0% {
+        filter: drop-shadow(0px 0px 0px rgba(0, 196, 240, 0.42));
+    }
+
+    50% {
+        filter: drop-shadow(0px 0px 52px rgba(0, 196, 240, 0.42));
+    }
+
+    100% {
+        filter: drop-shadow(0px 0px 0px rgba(0, 196, 240, 0.42));
+    }
 }
 
 .bg_circle3 {
@@ -586,7 +616,22 @@ a .butt_contact:hover {
 
     border-radius: 50%;
     border: 34px solid #E2A200;
-    filter: drop-shadow(0px 4px 70px rgba(226, 162, 0, 0.25));
+    animation: cir3_blur 3.5s infinite linear;
+    /* filter: drop-shadow(0px 4px 70px rgba(226, 162, 0, 0.25)); */
+}
+
+@keyframes cir3_blur {
+    0% {
+        filter: drop-shadow(0px 0px 0px rgba(226, 162, 0, 0.42));
+    }
+
+    50% {
+        filter: drop-shadow(0px 0px 52px rgba(226, 162, 0, 0.42));
+    }
+
+    100% {
+        filter: drop-shadow(0px 0px 0px rgba(226, 162, 0, 0.42));
+    }
 }
 
 .block_about_me_text {
@@ -601,6 +646,7 @@ a .butt_contact:hover {
     border-radius: 14px;
     z-index: 10;
     padding: 63px;
+    box-shadow: 10px 10px 15px 0px rgba(0, 0, 0, 0.75);
 }
 
 .aboutme_text1 {
@@ -681,7 +727,7 @@ a .butt_contact:hover {
     /* Gray2 */
 
     background: linear-gradient(130.68deg, #414141 0%, #2D2D2D 100.52%);
-    box-shadow: 0px 4px 15px rgba(27, 27, 27, 0.28);
+    box-shadow: 10px 10px 15px 0px rgba(0, 0, 0, 0.75);
     border-radius: 29px;
 }
 
