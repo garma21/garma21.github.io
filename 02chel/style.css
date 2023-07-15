@@ -4,11 +4,11 @@ body {
     width: 100%;
     height: 1362px;
     overflow-x: hidden;
+    overflow-y: hidden;
     position: relative;
     top: 0px;
     left: 50%;
     transform: translate(-50%, 0);
-
 }
 
 .b1 {
@@ -42,7 +42,7 @@ body {
 
     width: 50px;
     height: 50px;
-    z-index: 0;
+    z-index: -100;
 }
 
 .bar1,
@@ -84,75 +84,90 @@ body {
     width: 350px;
     height: 1280px;
     background-color: #F0C808;
-    z-index: 5;
+    z-index: 100;
     transition: .4s;
 }
 
 .change .menu {
     transform: translateX(360px);
+    z-index: 100;
 }
 
 .promo {
-    width: 100px;
-    height: 100px;
+    width: 400px;
+    height: 350px;
     position: absolute;
     top: 20%;
     left: 50%;
     transform: translate(-50%, -20%);
 
     margin: 0 auto;
+    z-index: -5;
 }
 
 .promo_img {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0%;
+    left: 0%;
+    transform: translate(50%, 50%);
     width: 400px;
     height: 350px;
     z-index: -5;
+    /* animation */
+
+    animation: T-animation 5s linear infinite normal;
+}
+
+@keyframes T-animation {
+    0% {
+        transform: rotateY(-180deg);
+    }
+
+    100% {
+        transform: rotateY(180deg);
+    }
 }
 
 .text1 {
     position: absolute;
-    top: 60%;
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -40%);
     font-family: 'Permanent Marker', cursive;
     font-size: 15pt;
+    z-index: -5;
 }
 
 .contact {
     position: absolute;
-    top: 75%;
+    top: 50%;
     left: 50%;
     transform: translate(-45%, -50%);
     font-family: 'Permanent Marker', cursive;
     font-size: 15pt;
+    z-index: -5;
 }
 
-.insta {
+.div_insta {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    top: 700px;
+    top: 780px;
     width: 25px;
     height: 25px;
 
 }
 
-.fa-instagram:hover {
-    color: #F0C808;
-}
-
-.fa-instagram {
+.insta {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: black;
     transition: .3s;
 }
+
+
+
 
 .copyright {
     position: absolute;
@@ -161,6 +176,7 @@ body {
     transform: translate(-50%, 0);
     font-family: 'Permanent Marker', cursive;
     margin: 0 auto;
+    z-index: -5;
 }
 
 .line {
@@ -205,6 +221,6 @@ body {
     font-size: 16pt;
 }
 
-p {
-    margin: 0 auto;
+div.container {
+    z-index: 10;
 }

@@ -1,7 +1,12 @@
-@media screen and (max-width: 350px) {
+@media screen and (max-width: 380px) {
     body {
-        max-width: 350px;
+        max-width: 380px;
         height: 844px;
+        z-index: -10;
+    }
+
+    .b1 {
+        width: 100%;
     }
 
     .b1_img {
@@ -9,19 +14,41 @@
         height: 37px;
     }
 
-    .promo_img {
-        top: 212px;
-        width: 245px;
+    .promo {
+        top: 170px;
+        max-width: 245px;
         height: 210px;
     }
 
-    .insta {
+    .promo_img {
+        top: 0px;
+        width: 245px;
+        height: 210px;
+        z-index: -5;
+    }
 
-        top: 7px;
-
-        left: 325px;
+    .div_insta {
+        top: 15px;
+        left: 335px;
         width: 50px;
         height: 50px;
 
+    }
+
+    .insta {
+        width: 50px;
+        height: 50px;
+    }
+
+    .menu {
+        z-index: 10;
+    }
+
+    .text1 {
+        width: 325px;
+    }
+
+    .contact {
+        transform: translate(-50%, -50%);
     }
 }
