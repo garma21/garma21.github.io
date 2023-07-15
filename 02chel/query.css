@@ -1,0 +1,27 @@
+@media screen and (max-width: 350px) {
+    body {
+        max-width: 350px;
+        height: 844px;
+    }
+
+    .b1_img {
+        width: 195px;
+        height: 37px;
+    }
+
+    .promo_img {
+        top: 212px;
+        width: 245px;
+        height: 210px;
+    }
+
+    .insta {
+
+        top: 7px;
+
+        left: 325px;
+        width: 50px;
+        height: 50px;
+
+    }
+}

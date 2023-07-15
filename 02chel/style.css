@@ -8,6 +8,7 @@ body {
     top: 0px;
     left: 50%;
     transform: translate(-50%, 0);
+
 }
 
 .b1 {
@@ -27,6 +28,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    z-index: 0;
 }
 
 /* //////////// */
@@ -40,7 +42,7 @@ body {
 
     width: 50px;
     height: 50px;
-    z-index: 3;
+    z-index: 0;
 }
 
 .bar1,
@@ -82,7 +84,7 @@ body {
     width: 350px;
     height: 1280px;
     background-color: #F0C808;
-    z-index: 2;
+    z-index: 5;
     transition: .4s;
 }
 
@@ -107,12 +109,13 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 400px;
-    height: 600px;
+    height: 350px;
+    z-index: -5;
 }
 
 .text1 {
     position: absolute;
-    top: 40%;
+    top: 60%;
     left: 50%;
     transform: translate(-50%, -40%);
     font-family: 'Permanent Marker', cursive;
@@ -121,7 +124,7 @@ body {
 
 .contact {
     position: absolute;
-    top: 45%;
+    top: 75%;
     left: 50%;
     transform: translate(-45%, -50%);
     font-family: 'Permanent Marker', cursive;
@@ -153,7 +156,7 @@ body {
 
 .copyright {
     position: absolute;
-    top: 775px;
+    bottom: 0%;
     left: 50%;
     transform: translate(-50%, 0);
     font-family: 'Permanent Marker', cursive;
