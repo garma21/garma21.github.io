@@ -88,9 +88,9 @@ body {
     color: #FFFFFF;
 }
 
-div.menu {
+div .menu {
 
-    width: 710px;
+    width: 760px;
     height: 21px;
     margin-right: 0;
 
@@ -127,6 +127,9 @@ div.menu {
 
 }
 
+.menu_butt2 {
+    width: 100px !important;
+}
 
 a:hover {
     cursor: pointer;

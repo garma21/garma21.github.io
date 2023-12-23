@@ -14,11 +14,64 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/6de5d9d091.js" crossorigin="anonymous"></script>
+    <style>
+        .slider-container {
+            width: 100%;
+            margin: auto;
+            overflow: hidden;
+            position: relative;
+            border-radius: 25px;
+        }
+
+        .slides {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            width: 1280px;
+            height: 720px;
+        }
+
+        .slide {
+            min-width: 100%;
+            box-sizing: border-box;
+
+        }
+
+        .prev,
+        .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 16px;
+
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            transition: 0.6s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .next {
+            right: 0;
+            border-radius: 3px 0 0 3px;
+        }
+
+        .slide img {
+            width: 100%;
+            height: auto;
+        }
+
+        a {
+            width: auto;
+            height: auto;
+        }
+    </style>
 </head>
 
 
 <body>
-
     <section class="home">
         <div class="header">
             <div class="logo">
@@ -86,7 +139,7 @@
                 <p class="icon1_text">JS</p>
             </div>
         </section>
-        <section class="icon2">
+        <!-- <section class="icon2">
             <div class="block_icon4">
                 <img class="icon1_svg" src="img/icon_comp.svg" alt="comp" srcset="">
                 <p class="icon1_text">Lorem</p>
@@ -95,8 +148,8 @@
                 <img class="icon2_svg" src="img/icon_motion.svg" alt="comp" srcset="">
                 <p class="icon1_text">Lorem</p>
             </div>
-            </div>
-        </section>
+
+        </section> -->
     </section>
 
     <section class="about_me">
@@ -135,20 +188,27 @@
         </scroll-page>
         <!-- <a name="portfolio"></a> -->
         <p class="portfolio_text">Portfolio</p>
-        <div class="portfolio_mainframe">
-            <a href="http://testbti.tilda.ws/" target="_blank">
-                <div class="portf_mainframe_img">
-                    <img src="img/kyiv.png" alt="" class="mainfrm_img">
+
+        <div class="slider-container">
+            <div class="slides">
+
+                <div class="slide"><a href="http://testbti.tilda.ws/" target="_blank">
+                        <img src="/img/kyiv.png" alt="Slide 1"></a></div>
+                <div class="slide"><a href="https://shs.gov.ua/" target="_blank">
+                        <img src="/img/shs_gov_ua.png" alt="Slide 2"></a></div>
+                <div class="slide"><a href="https://smallheartwithart.org/elec.catalog/" target="_blank">
+                        <img src="/img/el_libr.png" alt="Slide 3"></a>
                 </div>
-            </a>
-            <div class="portfolio_secondframe">
-                <p class="secondframe_text1">KP KOR "Kyiv Oblast BTI"</p>
-                <p class="secondframe_text2">The site was developed for the enterprise KP KOR "Kyiv Oblast BTI" on
-                    the
-                    instructions of the director of the enterprise. The site was developed functions of customer
-                    feedback, Google Maps.</p>
+
+
             </div>
+
+            <div class="prev" onclick="plusSlides(-1)">&#10094;</div>
+            <div class="next" onclick="plusSlides(1)">&#10095;</div>
         </div>
+
+
+
 
 
         <!-- <div class="button_control_left"><i class="fa-solid fa-arrow-left"></i></div>
@@ -170,7 +230,28 @@
         </div>
         <p class="soc_text">Ivan Shpak &copy; 2023</p>
     </section>
+    <script>
+        let slideIndex = 1;
+        showSlides(slideIndex);
 
+        function plusSlides(n) {
+            showSlides(slideIndex += n);
+        }
+
+        function showSlides(n) {
+            let i;
+            const slides = document.getElementsByClassName("slide");
+            if (n > slides.length) {
+                slideIndex = 1;
+            }
+            if (n < 1) {
+                slideIndex = slides.length;
+            }
+
+            const translateValue = -(slideIndex - 1) * 100 + '%';
+            document.querySelector('.slides').style.transform = 'translateX(' + translateValue + ')';
+        }
+    </script>
 </body>
 
 
