@@ -2,7 +2,7 @@
     font-family: "E-Ukraine";
     src:
 
-        url("/newBTI/font/e-Ukraine-Regular.otf") format("otf");
+        url("/font/e-Ukraine-Regular.otf") format("otf");
 }
 
 body {
