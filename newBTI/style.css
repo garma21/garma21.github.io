@@ -1,8 +1,6 @@
 @font-face {
-    font-family: "E-Ukraine";
-    src:
-
-        url("/font/e-Ukraine-Regular.otf") format("otf");
+    font-family: "e-Ukraine";
+    src: url("font/e-Ukraine-Regular.otf"), format("opentype");
 }
 
 body {
@@ -135,7 +133,7 @@ p {
 }
 
 .card_butt_text {
-    font-family: e-Ukraine;
+    font-family: 'e-Ukraine', sans-serif;
     font-size: 14px;
     font-style: normal;
     font-weight: 700;
@@ -162,7 +160,8 @@ p {
 .basic_services_text,
 .why_us_text {
     color: var(--testbti-tilda-ws-black, #000);
-    font-family: e-Ukraine;
+    font-family: 'e-Ukraine',
+        sans-serif;
     font-size: 35px;
     font-style: normal;
     font-weight: 400;
@@ -234,7 +233,7 @@ p {
 .block4_text,
 .block5_text {
     color: #000;
-    font-family: e-Ukraine;
+    font-family: 'e-Ukraine', sans-serif;
     font-size: 20px;
     font-style: normal;
     font-weight: 400;
@@ -407,7 +406,7 @@ p {
 .why_us_main_block1_subblock3>p.number,
 .why_us_main_block2_subblock1>p.number,
 .why_us_main_block2_subblock2>p.number {
-    font-family: e-Ukraine;
+    font-family: 'e-Ukraine', sans-serif;
     font-size: 78px;
     font-style: normal;
     font-weight: 400;
@@ -423,7 +422,8 @@ p {
 .why_us_main_block1_subblock3>p.text,
 .why_us_main_block2_subblock1>p.text,
 .why_us_main_block2_subblock2>p.text {
-    font-family: e-Ukraine;
+    font-family: 'e-Ukraine',
+        sans-serif;
     font-size: 20px;
     font-style: normal;
     font-weight: 400;
