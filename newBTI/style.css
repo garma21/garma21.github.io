@@ -537,3 +537,131 @@ p {
 
     margin: 0 0 auto;
 }
+
+.teh_passport {
+    position: absolute;
+    top: 3110px;
+    left: 50%;
+    transform: translate(-50%);
+
+    width: 1920px;
+    height: 140px;
+    border: 1px solid black;
+}
+
+.teh_passport2 {
+    position: absolute;
+    top: 3250px;
+    left: 50%;
+    transform: translate(-50%);
+
+    width: 1920px;
+    height: 550px;
+
+    border: 1px solid green;
+}
+
+.teh_passport2 .wrapper {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 1174px;
+    height: 550px;
+    border: 1px solid blue;
+}
+
+.teh_passport2 .wrapper>p {
+    margin-left: 25px;
+    margin-top: 65px;
+    width: max-content;
+
+    font-family: e-Ukraine;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 31px;
+}
+
+.additional_services {
+    width: 1920px;
+    height: 150px;
+
+    position: absolute;
+    top: 3800px;
+    left: 50%;
+    transform: translate(-50%);
+
+    border: 1px solid black;
+}
+
+.additional_services2 {
+    width: 1920px;
+    height: 460px;
+
+    position: absolute;
+    top: 3950px;
+    left: 50%;
+    transform: translate(-50%);
+
+    border: 1px solid rebeccapurple;
+}
+
+.additional_services2 .wrapper {
+    width: 1174px;
+    height: 425px;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    grid-template-columns: repeat(2, 552px);
+    grid-template-rows: repeat(2, 198px);
+    grid-column-gap: 70px;
+    grid-row-gap: 25.5px;
+}
+
+.faq1 {
+    width: 1920px;
+    height: 130px;
+
+    position: absolute;
+    top: 4410px;
+    left: 50%;
+    transform: translate(-50%);
+    border: 1px solid violet;
+}
+
+.faq2 {
+    width: 1920px;
+    height: 591px;
+    border: 1px solid red;
+
+    position: absolute;
+    top: 4590px;
+    left: 50%;
+    transform: translate(-50%);
+}
+
+.faq2 .wrapper {
+    width: 800px;
+    height: 591px;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid green;
+}
+
+div.faq2 .block1,
+div.faq2 .block2,
+div.faq2 .block3,
+div.faq2 .block4,
+div.faq2 .block5 {
+    box-shadow: none;
+    border: 1px solid black;
+    height: 118.2px;
+    width: auto;
+
+}
