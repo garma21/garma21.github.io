@@ -654,14 +654,155 @@ p {
     border: 1px solid green;
 }
 
-div.faq2 .block1,
-div.faq2 .block2,
-div.faq2 .block3,
-div.faq2 .block4,
-div.faq2 .block5 {
+div.faq2 div.wrapper .block1,
+div.faq2 div.wrapper .block2,
+div.faq2 div.wrapper .block3,
+div.faq2 div.wrapper .block4,
+div.faq2 div.wrapper .block5 {
     box-shadow: none;
-    border: 1px solid black;
-    height: 118.2px;
+    border: 0.2px solid black;
+    height: 116px;
     width: auto;
 
 }
+
+div.wrapper .block5 {
+    top: 0px;
+}
+
+div.faq2 div.wrapper div.block1 p,
+div.faq2 div.wrapper div.block2 p,
+div.faq2 div.wrapper div.block3 p,
+div.faq2 div.wrapper div.block4 p,
+div.faq2 div.wrapper div.block5 p {
+    position: relative;
+    top: 50%;
+    left: 30%;
+    transform: translate(0, -50%);
+}
+
+/* falling container */
+.hidden {
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+/* Стилі для розгорнутого блоку */
+.expandableBlock {
+    border: solid #000000;
+    border-top-width: 0px;
+    border-left-width: 0px;
+    border-right-width: 0px;
+    border-bottom-width: 1px;
+    margin-top: 0px;
+    animation: slideDown 0.5s ease;
+
+}
+
+/* Реверсивна анімація для згортання блоку */
+.expandableBlock.reverseSlideUp {
+    animation: reverseSlideUp 0.5s ease;
+}
+
+/* Анімація знизу вгору */
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Реверсивна анімація для згортання блоку */
+
+
+@keyframes reverseSlideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+/* Стилі для чорних квадратів (перехрестя) */
+.blackSquare {
+    width: 40px;
+    height: 40px;
+    background-color: #E5C7AD;
+    cursor: pointer;
+    position: relative;
+    top: 10px;
+    left: 750px;
+
+    transition: transform 0.5s ease;
+
+    border-radius: 25px;
+    /* Додано анімацію для властивості transform */
+}
+
+.horizontalLine,
+.verticalLine {
+    position: absolute;
+    background-color: #000;
+    transition: transform 0.5s ease;
+    /* Додано анімацію для властивості transform */
+}
+
+.horizontalLine {
+    width: 65%;
+    height: 2px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.verticalLine {
+    width: 2px;
+    height: 65%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Додано клас для обертання на 45 градусів */
+.rotate45 {
+    transform: rotate(45deg);
+}
+
+/* Стилі для тексту правіше від кнопок */
+.buttonText {
+    margin-left: 10px;
+}
+
+/* Стилі для контейнера блоку */
+.blockContainer {
+    display: flex;
+    align-items: center;
+    flex-direction: column-reverse;
+    width: 720px;
+    height: max-content;
+    margin-bottom: 10px;
+    /* Змінено напрямок головної осі на обернений */
+}
+
+.test {
+    width: 800px;
+    height: max-content;
+    border: solid black;
+    border-top-width: 1px;
+    border-left-width: 0px;
+    border-right-width: 0px;
+    border-bottom-width: 0px;
+}
+
+/* falling container */
