@@ -635,23 +635,23 @@ p {
 
 .faq2 {
     width: 1920px;
-    height: 591px;
+    height: max-content;
     border: 1px solid red;
 
-    position: absolute;
-    top: 4590px;
+    position: relative;
+    top: 3600px;
     left: 50%;
     transform: translate(-50%);
 }
 
 .faq2 .wrapper {
     width: 800px;
-    height: 591px;
+    height: max-content;
     position: relative;
-    top: 50%;
+    top: 0%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    border: 1px solid green;
+    transform: translate(-50%, 0);
+
 }
 
 div.faq2 div.wrapper .block1,
@@ -690,11 +690,7 @@ div.faq2 div.wrapper div.block5 p {
 
 /* Стилі для розгорнутого блоку */
 .expandableBlock {
-    border: solid #000000;
-    border-top-width: 0px;
-    border-left-width: 0px;
-    border-right-width: 0px;
-    border-bottom-width: 1px;
+
     margin-top: 0px;
     animation: slideDown 0.5s ease;
 
@@ -789,7 +785,7 @@ div.faq2 div.wrapper div.block5 p {
     display: flex;
     align-items: center;
     flex-direction: column-reverse;
-    width: 720px;
+    width: 800px;
     height: max-content;
     margin-bottom: 10px;
     /* Змінено напрямок головної осі на обернений */
@@ -806,3 +802,211 @@ div.faq2 div.wrapper div.block5 p {
 }
 
 /* falling container */
+.contacts {
+    width: 1920px;
+    height: 130px;
+    position: relative;
+    top: 3620px;
+    left: 50%;
+    transform: translate(-50%);
+    border: 1px solid red;
+}
+
+.contact2 {
+    width: 1920px;
+    height: 610px;
+    position: relative;
+    top: 3620px;
+    left: 50%;
+    transform: translate(-50%);
+    border: 1px solid red;
+}
+
+.contact2 .wrapper {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid black;
+    width: 731px;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 237px);
+    grid-template-rows: repeat(7, 70px);
+    grid-column-gap: 10px;
+    grid-row-gap: 10px;
+}
+
+.div1,
+.div2,
+.div3,
+.div4,
+.div5,
+.div6,
+.div7,
+.div8,
+.div9,
+.div10,
+.div11,
+.div12,
+.div13,
+.div14,
+.div15,
+.div16,
+.div17,
+.div18,
+.div19 {
+    border-radius: 5px;
+    border: 0px solid black;
+    width: 100%;
+    height: 100%;
+    background-color: #E5C7AD;
+}
+
+.div1 {
+    grid-area: 1 / 1 / 2 / 2;
+}
+
+.div2 {
+    grid-area: 1 / 2 / 2 / 3;
+}
+
+.div3 {
+    grid-area: 1 / 3 / 2 / 4;
+}
+
+.div4 {
+    grid-area: 2 / 1 / 3 / 2;
+}
+
+.div5 {
+    grid-area: 2 / 2 / 3 / 3;
+}
+
+.div6 {
+    grid-area: 2 / 3 / 3 / 4;
+
+}
+
+.div7 {
+    grid-area: 3 / 1 / 4 / 2;
+}
+
+.div8 {
+    grid-area: 3 / 2 / 4 / 3;
+}
+
+.div9 {
+    grid-area: 3 / 3 / 4 / 4;
+}
+
+.div10 {
+    grid-area: 4 / 1 / 5 / 2;
+
+}
+
+.div11 {
+    grid-area: 4 / 2 / 5 / 3;
+
+}
+
+.div12 {
+    grid-area: 4 / 3 / 5 / 4;
+
+}
+
+.div13 {
+    grid-area: 5 / 1 / 6 / 2;
+
+}
+
+.div14 {
+    grid-area: 5 / 2 / 6 / 3;
+
+}
+
+.div15 {
+    grid-area: 5 / 3 / 6 / 4;
+
+}
+
+.div16 {
+    grid-area: 6 / 1 / 7 / 2;
+
+}
+
+.div17 {
+    grid-area: 6 / 2 / 7 / 3;
+
+}
+
+.div18 {
+    grid-area: 6 / 3 / 7 / 4;
+
+}
+
+.div19 {
+    grid-area: 7 / 2 / 8 / 3;
+
+}
+
+.contact_text {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-family: e-Ukraine;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 31px;
+}
+
+
+/* ////////////////////////////// */
+#popupContainer {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 998;
+
+    width: 1000px;
+    height: 700px;
+}
+
+/* Стилі для кнопки закриття popup */
+#closePopupButton {
+    cursor: pointer;
+    color: #007BFF;
+    margin-bottom: 10px;
+}
+
+/* Сховати кнопку закриття popup */
+#closePopupButton.hidden {
+    display: none;
+}
+
+/* Стилі для тла при відкритому popup (затемнення фону) */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 999;
+}
+
+/* Збільшити z-index тла при відкритому popup */
+#popupContainer.active,
+.overlay.active {
+    display: block;
+}
