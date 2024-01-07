@@ -861,7 +861,11 @@ div.faq2 div.wrapper div.block5 p {
     width: 100%;
     height: 100%;
     background-color: #E5C7AD;
+    box-shadow: 5px 5px 10px 0px #A8A8A8;
+    transition: 0.5s ease;
 }
+
+
 
 .div1 {
     grid-area: 1 / 1 / 2 / 2;
@@ -965,7 +969,9 @@ div.faq2 div.wrapper div.block5 p {
 
 
 /* ////////////////////////////// */
-#popupContainer {
+
+/* ?/////////////////////////////////////// */
+.popupContainer {
     display: none;
     position: fixed;
     top: 50%;
@@ -975,10 +981,48 @@ div.faq2 div.wrapper div.block5 p {
     background-color: #fff;
     border: 1px solid #ccc;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    z-index: 998;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.5s ease;
 
     width: 1000px;
-    height: 700px;
+    height: 600px;
+}
+
+.popupContainer .adress,
+.popupContainer .time_work,
+.popupContainer .phone {
+    border: 0px solid black;
+    width: 500px;
+    height: 141px;
+    margin-bottom: 25px;
+}
+
+.popupContainer .adress {
+    position: relative;
+    top: 50px;
+    left: 0px;
+}
+
+.popupContainer .line {
+    position: relative;
+    top: 0px;
+    left: 0px;
+    width: 16px;
+    height: 141px;
+    background-color: #E5C7AD;
+}
+
+.popupContainer .time_work {
+    position: relative;
+    top: 50px;
+    left: 0px;
+}
+
+.popupContainer .phone {
+    position: relative;
+    top: 50px;
+    left: 0px;
 }
 
 /* Стилі для кнопки закриття popup */
@@ -1002,11 +1046,103 @@ div.faq2 div.wrapper div.block5 p {
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     display: none;
-    z-index: 999;
+    z-index: -1;
 }
 
 /* Збільшити z-index тла при відкритому popup */
-#popupContainer.active,
+.popupContainer.active,
 .overlay.active {
     display: block;
+    opacity: 1;
+}
+
+.adress_text,
+.time_work_text,
+.phone_text {
+    font-family: e-Ukraine;
+    line-height: 1.25;
+    font-weight: 400;
+    background-position: center center;
+    border-color: transparent;
+    border-style: solid;
+    border: 0px solid red;
+}
+
+.adress .adress_text {
+    width: max-content;
+    height: max-content;
+    position: absolute;
+    top: 50%;
+    left: 31px;
+    transform: translate(0, -50%);
+    margin: 0 0 auto;
+}
+
+.time_work .time_work_text {
+    width: max-content;
+    height: max-content;
+    position: absolute;
+    top: 50%;
+    left: 31px;
+    transform: translate(0, -50%);
+    margin: 0 0 auto;
+}
+
+.phone .phone_text {
+    width: max-content;
+    height: max-content;
+    position: absolute;
+    top: 50%;
+    left: 31px;
+    transform: translate(0, -50%);
+    margin: 0 0 auto;
+}
+
+.close_popup {
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+}
+
+.close_popup .cl1 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 4px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    background-color: #000;
+    border-radius: 25px;
+    zoom: 100%;
+    transition: .3s;
+}
+
+.close_popup .cl2 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 4px;
+    transform: translate(-50%, -50%) rotate(135deg);
+    background-color: #000;
+    zoom: 100%;
+    transition: .3s;
+    border-radius: 25px;
+}
+
+.close_popup:hover>.cl1,
+.close_popup:hover>.cl2 {
+    zoom: 120%;
+}
+
+.popup_text {
+    font-family: e-Ukraine;
+    line-height: 1.25;
+    font-weight: 400;
+    background-position: center center;
+    border-color: transparent;
+    border-style: solid;
 }

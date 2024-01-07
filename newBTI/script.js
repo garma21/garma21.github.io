@@ -33,35 +33,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 document.addEventListener("DOMContentLoaded", function () {
-    var openPopupButton = document.getElementById("openPopupButton");
-    var popupContainer = document.getElementById("popupContainer");
-    var closePopupButton = document.getElementById("closePopupButton");
-    var overlay = document.createElement('div');
-    overlay.className = 'overlay';
+    // Додати слухач події для кожної кнопки відкриття popup
+    var openPopupButtons = document.querySelectorAll(".openPopupButton");
+    openPopupButtons.forEach(function (button, index) {
+        var popupContainer = document.getElementById("popupContainer" + (index + 1));
+        var closePopupButton = document.getElementById("closePopupButton" + (index + 1));
 
-    // Функція відкриття popup
-    function openPopup() {
+        button.addEventListener("click", function (event) {
+            event.preventDefault();
+            openPopup(popupContainer, closePopupButton);
+        });
+
+        closePopupButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            closePopup(popupContainer, closePopupButton);
+        });
+    });
+
+    function openPopup(popupContainer, closePopupButton) {
         popupContainer.classList.add("active");
+        popupContainer.classList.remove("hidden");
         overlay.classList.add("active");
         closePopupButton.classList.remove("hidden");
     }
 
-    // Функція закриття popup
-    function closePopup() {
+    function closePopup(popupContainer, closePopupButton) {
         popupContainer.classList.remove("active");
+        popupContainer.classList.add("hidden");
         overlay.classList.remove("active");
         closePopupButton.classList.add("hidden");
+        closePopupButton.classList.remove("active");
     }
-
-    // Додати слухач події для кнопки відкриття popup
-    openPopupButton.addEventListener("click", openPopup);
-
-    // Додати слухач події для кнопки закриття popup
-    closePopupButton.addEventListener("click", closePopup);
-
-    // Додати overlay до body
-    document.body.appendChild(overlay);
-
-    // Додати слухач події для закриття popup при кліці на overlay
-    overlay.addEventListener("click", closePopup);
 });
