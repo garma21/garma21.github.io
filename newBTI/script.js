@@ -65,3 +65,47 @@ document.addEventListener("DOMContentLoaded", function () {
         closePopupButton.classList.remove("active");
     }
 });
+// code slider
+document.addEventListener("DOMContentLoaded", function () {
+    const slider = document.querySelector(".slider");
+    const slides = document.querySelectorAll(".slide");
+    const totalSlides = slides.length;
+    let currentIndex = 0;
+
+    function showSlide(index) {
+        if (index < 0) {
+            currentIndex = totalSlides - 1;
+        } else if (index >= totalSlides) {
+            currentIndex = 0;
+        } else {
+            currentIndex = index;
+        }
+
+        const translateValue = -currentIndex * 100 + "%";
+        slider.style.transform = "translateX(" + translateValue + ")";
+    }
+
+    function nextSlide() {
+        showSlide(currentIndex + 1);
+    }
+
+    function prevSlide() {
+        showSlide(currentIndex - 1);
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowLeft") {
+            prevSlide();
+        } else if (event.key === "ArrowRight") {
+            nextSlide();
+        }
+    });
+
+    slides.forEach(function (slide, index) {
+        slide.addEventListener("click", function () {
+            showSlide(index);
+        });
+    });
+
+    setInterval(nextSlide, 5000); // автоматичне прокручування кожні 5 секунд
+});
