@@ -1,0 +1,26 @@
+@media screen and (max-width:1441px) {
+
+
+    html,
+    body,
+    .prapor,
+    .card_doc,
+    .basic_services,
+    .basic_services2,
+    .why_us,
+    .why_us2,
+    .teh_passport,
+    .teh_passport2,
+    .additional_services,
+    .additional_services2,
+    .faq1,
+    .faq2,
+    .contacts,
+    .contact2,
+    .slider-container1,
+    .slider-container2,
+    .footer {
+        max-width: 1440px;
+
+    }
+}
