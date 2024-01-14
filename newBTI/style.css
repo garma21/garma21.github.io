@@ -49,6 +49,17 @@ body {
         z-index: -10;
     }
 
+    .bg_menu {
+        background-color: white;
+        width: 1200px;
+        height: 96px;
+        position: absolute;
+        top: 22px;
+        left: 50%;
+        transform: translate(-50%, 0);
+        box-shadow: 0px 0px 50px 0px #C7C7C7;
+    }
+
     .block_blue {
         background-color: #0057B8;
         width: 1440px;
@@ -78,6 +89,19 @@ body {
         width: auto;
     }
 
+    .p2 {
+        font-family: e-Ukraine;
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 31px;
+        width: 465px;
+        height: 62px;
+        position: absolute;
+        top: 677px;
+        left: 641px;
+    }
+
     .button {
         width: 295px;
         height: 75px;
@@ -88,6 +112,17 @@ body {
 
         box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.5);
         transition: all .3s ease-in;
+    }
+
+    .button p {
+        font-family: e-Ukraine;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 27.9px;
+
+        margin: 25px;
+        text-align: center;
     }
 
     .button:hover {
@@ -333,8 +368,8 @@ body {
     }
 
     .why_us_main {
-        width: 1185px;
-        height: 242px;
+        width: 100%;
+        height: max-content;
 
 
         position: relative;

@@ -24,3 +24,308 @@
 
     }
 }
+
+@media screen and (max-width:1025px) {
+
+    html,
+    body,
+    .prapor,
+    .card_doc,
+    .wrapper_b_s,
+    .basic_services,
+    .basic_services2,
+    .why_us,
+    .why_us2,
+    .teh_passport,
+    .teh_passport2,
+    .additional_services,
+    .additional_services2,
+    .faq1,
+    .faq2,
+    .contacts,
+    .contact2,
+    .slider-container1,
+    .slider-container2,
+    .footer {
+        max-width: 1024px !important;
+
+    }
+
+    .bg_menu {
+
+        max-width: 960px;
+
+    }
+
+    .menu {
+        left: 440px !important;
+    }
+
+    .block_blue {
+        max-width: 1024px;
+    }
+
+    .block_yellow {
+        max-width: 1024px;
+    }
+
+    .prapor img {
+        left: 60px !important;
+    }
+
+    .prapor p {
+        left: 502px !important;
+        max-width: 363px;
+    }
+
+    .prapor p.p2 {
+        top: 720px !important;
+    }
+
+    .prapor .button {
+        left: 502px !important;
+    }
+
+    .card_doc {
+        grid-template-columns: repeat(4, 217px) !important;
+        grid-column-gap: 17px !important;
+        grid-row-gap: 0px;
+        justify-content: center;
+        align-content: center;
+        width: 100%;
+        height: 330px;
+        position: absolute;
+        top: 1160px;
+        left: 50%;
+        transform: translate(-50%);
+
+    }
+
+    .button_card {
+        max-width: 195px;
+    }
+
+    .button_card2 {
+        max-height: 101px !important;
+    }
+
+    .card1,
+    .card2,
+    .card3,
+    .card4 {
+        max-width: 217px;
+    }
+
+    .card_butt_text {
+        font-family: e-Ukraine;
+        font-size: 13px !important;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 20.15px;
+    }
+
+    .basic_services2 .wrapper_b_s .block1,
+    .basic_services2 .wrapper_b_s .block2,
+    .basic_services2 .wrapper_b_s .block3,
+    .basic_services2 .wrapper_b_s .block4,
+    .basic_services2 .block5 {
+        max-width: 467px !important;
+    }
+
+    .wrapper_b_s {
+        grid-template-columns: repeat(2, 467px) !important;
+        grid-template-rows: repeat(2, 198px) !important;
+        grid-column-gap: 25px !important;
+        grid-row-gap: 25px !important;
+        justify-content: center !important;
+    }
+
+
+    .line1 {
+        left: 30px !important;
+    }
+
+    .line2 {
+        left: 525px !important;
+    }
+
+    .line3 {
+        left: 525px !important;
+    }
+
+    .line4 {
+        left: 30px !important;
+    }
+
+    .block1_text,
+    .block2_text,
+    .block3_text,
+    .block4_text,
+    .block5_text {
+        max-width: 415px;
+    }
+
+    .why_us_main {
+        grid-template-columns: 1024px !important;
+        grid-template-rows: 399px 260px !important;
+    }
+
+    .why_us_main_block1 {
+        max-width: 1024px !important;
+        max-height: 399px !important;
+        grid-template-columns: 370px !important;
+        grid-template-rows: repeat(3, 121px) !important;
+        grid-column-gap: 0px !important;
+        grid-row-gap: 18px !important;
+        position: relative;
+        top: 100px;
+
+    }
+
+    .why_us_main_block1_subblock1 {
+        grid-area: 1 / 1 / 2 / 2 !important;
+    }
+
+    .why_us_main_block1_subblock1 p.text {
+        left: 440px !important;
+    }
+
+    .why_us_main_block1_subblock2 {
+        grid-area: 2 / 1 / 3 / 2 !important;
+    }
+
+    .why_us_main_block1_subblock2 p.text {
+        top: 170px !important;
+        left: 440px !important;
+    }
+
+    .why_us_main_block1_subblock3 {
+        grid-area: 3 / 1 / 4 / 2 !important;
+    }
+
+    .why_us_main_block1_subblock3 p.text {
+        top: 310px !important;
+        left: 440px !important;
+    }
+
+    .why_us_main_block2 {
+        max-width: 1024px;
+        max-height: 260px;
+        grid-template-columns: 670px !important;
+        grid-template-rows: repeat(2, 121px) !important;
+        grid-column-gap: 0px;
+        grid-row-gap: 18px !important;
+        position: relative;
+        top: 100px;
+    }
+
+    .why_us_main_block2_subblock1 {
+        grid-area: 1 / 1 / 2 / 2 !important;
+    }
+
+    .why_us_main_block2_subblock2 {
+        grid-area: 2 / 1 / 3 / 2 !important;
+    }
+
+    .teh_passport {
+        top: 3250px !important;
+    }
+
+    .teh_passport2 {
+        top: 3350px !important;
+    }
+
+    .why_us_main_block2_subblock1 p.text {
+        top: 30px !important;
+        left: 300px !important;
+    }
+
+    .why_us_main_block2_subblock2 p.text {
+        top: 170px !important;
+        left: 300px !important;
+    }
+
+    .why_us_main_block1_subblock1 div.line {
+        left: 440px !important;
+    }
+
+    .why_us_main_block1_subblock2 div.line {
+        left: 440px !important;
+        top: 222px !important;
+    }
+
+    .why_us_main_block1_subblock3 div.line {
+        left: 440px !important;
+        top: 371px !important;
+    }
+
+    .why_us_main_block2_subblock1 div.line {
+        left: 300px !important;
+        top: 90px !important;
+    }
+
+    .why_us_main_block2_subblock2 div.line {
+        left: 300px !important;
+        top: 230px !important;
+    }
+
+    .teh_passport2 .wrapper {
+        max-width: 1024px;
+    }
+
+    .teh_passport2 .wrapper p {
+        max-width: 990px;
+    }
+
+    .additional_services2 .wrapper {
+        max-width: 1024px;
+
+    }
+
+    .additional_services2 .wrapper {
+        max-width: 1024px;
+
+    }
+
+    .additional_services2 .wrapper .block1,
+    .additional_services2 .wrapper .block2,
+    .additional_services2 .wrapper .block3,
+    .additional_services2 .wrapper .block4 {
+        max-width: 475px;
+        max-height: 198px;
+    }
+
+    .additional_services2 .wrapper {
+        max-width: max-content !important;
+        grid-template-columns: repeat(2, 475px) !important;
+        grid-template-rows: repeat(2, 198px) !important;
+        grid-column-gap: 25px !important;
+        grid-row-gap: 25px !important;
+    }
+
+    .additional_services2 .wrapper .block1 .line1 {
+        left: 0px !important;
+    }
+
+    .additional_services2 .wrapper .block2 .line2 {
+        left: 500px !important;
+    }
+
+    .additional_services2 .wrapper .block3 .line3 {
+        left: 0px !important;
+    }
+
+    .additional_services2 .wrapper .block4 .line4 {
+        left: 500px !important;
+    }
+
+    .additional_services2 .wrapper .block4 .block4_text {
+        max-width: 465px;
+        font-family: e-Ukraine;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 31px;
+        left: 275px !important;
+    }
+}
