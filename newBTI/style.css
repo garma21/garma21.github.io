@@ -62,14 +62,14 @@ body {
 
     .block_blue {
         background-color: #0057B8;
-        width: 1440px;
+        width: 1920px;
         height: 500px;
         grid-area: 1 / 1 / 2 / 2;
     }
 
     .block_yellow {
         background-color: #FFD700;
-        width: 1440px;
+        width: 1920px;
         height: 500px;
         grid-area: 2 / 1 / 3 / 2;
     }
