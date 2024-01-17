@@ -65,6 +65,39 @@ document.addEventListener("DOMContentLoaded", function () {
         closePopupButton.classList.remove("active");
     }
 });
+// testing
+document.addEventListener("DOMContentLoaded", function () {
+    var openPopupButtons = document.querySelectorAll(".openPopupButton");
+    var overlay = document.getElementById("overlay");
+
+    openPopupButtons.forEach(function (button, index) {
+        var popupContainer = document.getElementById("popupContainerBlock" + (index + 1));
+        var closePopupButton = document.getElementById("closePopupButtonBlock" + (index + 1));
+
+        button.addEventListener("click", function (event) {
+            event.preventDefault();
+            openPopup(popupContainer, closePopupButton);
+        });
+
+        closePopupButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            closePopup(popupContainer, closePopupButton);
+        });
+    });
+
+    function openPopup(popupContainer, closePopupButton) {
+        popupContainer.classList.add("active");
+        overlay.classList.add("active");
+        closePopupButton.classList.remove("hidden");
+    }
+
+    function closePopup(popupContainer, closePopupButton) {
+        popupContainer.classList.remove("active");
+        overlay.classList.remove("active");
+        closePopupButton.classList.add("hidden");
+        closePopupButton.classList.remove("active");
+    }
+});
 // code slider
 document.addEventListener("DOMContentLoaded", function () {
     const slider = document.querySelector(".slider");

@@ -23,6 +23,18 @@
         max-width: 1440px;
 
     }
+
+    .block_blue {
+        max-width: 1440px;
+    }
+
+    .block_yellow {
+        max-width: 1440px;
+    }
+
+    .why_us_main {
+        width: max-content;
+    }
 }
 
 @media screen and (max-width:1025px) {
@@ -49,6 +61,13 @@
     .footer {
         max-width: 1024px !important;
 
+    }
+
+    html,
+    body {
+        height: max-content;
+        overflow-x: hidden;
+        scroll-behavior: smooth;
     }
 
     .bg_menu {
@@ -370,6 +389,7 @@
     body {
         height: max-content;
         overflow-x: hidden;
+        scroll-behavior: smooth;
     }
 
     .bg_menu {
@@ -910,7 +930,7 @@
     }
 
     .faq2 {
-        top: 7350px;
+        top: 6381px;
     }
 
     .faq2 .wrapper {
@@ -971,7 +991,7 @@
 
 
     .contacts {
-        top: 7366px !important;
+        top: 6420px !important;
     }
 
 
@@ -990,12 +1010,16 @@
 
     }
 
-    .basic_services_line {
-        top: 5%;
+    .teh_passport .basic_services_line {
+        top: 20%;
+    }
+
+    .contacts .basic_services_line {
+        top: 0%;
     }
 
     .contact2 {
-        top: 7410px !important;
+        top: 6500px !important;
         height: max-content;
 
 
@@ -1015,11 +1039,11 @@
     }
 
     .slider-container1 {
-        top: 10943px;
+        top: 10000px;
     }
 
     .slider-container2 {
-        top: 11138px;
+        top: 10170px;
         height: 650px;
     }
 
@@ -1033,7 +1057,7 @@
     }
 
     .footer {
-        top: 11700px;
+        top: 10750px;
         height: 100px;
     }
 
@@ -1047,5 +1071,14 @@
         top: 25%;
         right: 50%;
         transform: translate(50%);
+    }
+
+    .popupContainer {
+        max-width: 390px;
+        height: 680px;
+    }
+
+    .text_popup1 {
+        max-width: 350px;
     }
 }
