@@ -585,7 +585,7 @@ h1 {
 }
 
 .footer-links a:hover {
-    box-shadow: 1px 1px 19px 11px rgba(255, 255, 255, 0.29);
+    box-shadow: 0x 0px 20px 10px rgba(255, 255, 255, 0.30);
 }
 
 .footer-contact {
