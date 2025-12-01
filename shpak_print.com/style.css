@@ -3,6 +3,17 @@ body {
     margin: 0 0 auto;
 }
 
+@media screen and (max-width:1440px) {
+    .header {
+        width: 1280px !important;
+        height: 120px !important;
+    }
+
+    .price1 .header {
+        width: 575px !important;
+    }
+}
+
 .header {
     background-color: #FEFEFE;
     width: 1442px;
@@ -29,7 +40,7 @@ body {
     height: 35px;
     position: relative;
     top: 50%;
-    left: 470px;
+    left: 370px;
     transform: translate(0, -50%);
 
     display: flex;
