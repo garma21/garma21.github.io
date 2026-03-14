@@ -78,7 +78,7 @@ border-radius:6px;
 <input id="printTime" type="number" value="5">
 
 <label>Споживана потужність (Вт)</label>
-<input id="power" type="number" value="150">
+<input id="power" type="number" value="350">
 
 <label>Вартість електроенергії (грн/кВт·год)</label>
 <input id="electricPrice" type="number" value="4.32">
@@ -87,13 +87,10 @@ border-radius:6px;
 <input id="wear" type="number" value="10">
 
 <label>Заробітна плата оператора (грн/год)</label>
-<input id="salaryHour" type="number" value="30">
+<input id="salaryHour" type="number" value="40">
 
 <label>Вартість постобробки (грн)</label>
 <input id="post" type="number" value="20">
-
-<label>Додаткові витрати (грн)</label>
-<input id="extra" type="number" value="10">
 
 <button onclick="calc()">Розрахувати</button>
 
@@ -122,7 +119,7 @@ let electricPrice = Number(document.getElementById("electricPrice").value);
 let wear = Number(document.getElementById("wear").value);
 let salaryHour = Number(document.getElementById("salaryHour").value);
 let post = Number(document.getElementById("post").value);
-let extra = Number(document.getElementById("extra").value);
+
 
 let materialCost = materialPrice * materialUsed;
 
@@ -140,8 +137,7 @@ materialCost +
 electricity +
 wearCost +
 salary +
-post +
-extra;
+post;
 
 document.getElementById("result").innerHTML =
 
