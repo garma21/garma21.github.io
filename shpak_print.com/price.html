@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Калькулятор вартості 3D друку</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+padding:40px;
+}
+
+.container{
+max-width:700px;
+margin:auto;
+background:#1e293b;
+padding:30px;
+border-radius:10px;
+}
+
+h1{
+text-align:center;
+margin-bottom:20px;
+}
+
+label{
+display:block;
+margin-top:15px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:5px;
+border-radius:6px;
+border:none;
+}
+
+button{
+margin-top:20px;
+width:100%;
+padding:12px;
+background:#3b82f6;
+border:none;
+color:white;
+font-size:16px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.result{
+margin-top:25px;
+font-size:20px;
+background:#020617;
+padding:20px;
+border-radius:6px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Калькулятор вартості 3D друку</h1>
+
+<label>Вартість матеріалу (грн/г)</label>
+<input id="materialPrice" type="number" value="0.6">
+
+<label>Витрати матеріалу (г)</label>
+<input id="materialUsed" type="number" value="50">
+
+<label>Час друку (години)</label>
+<input id="printTime" type="number" value="5">
+
+<label>Споживана потужність (Вт)</label>
+<input id="power" type="number" value="150">
+
+<label>Вартість електроенергії (грн/кВт·год)</label>
+<input id="electricPrice" type="number" value="4.32">
+
+<label>Знос обладнання (грн/год)</label>
+<input id="wear" type="number" value="10">
+
+<label>Заробітна плата оператора (грн/год)</label>
+<input id="salaryHour" type="number" value="30">
+
+<label>Вартість постобробки (грн)</label>
+<input id="post" type="number" value="20">
+
+<label>Додаткові витрати (грн)</label>
+<input id="extra" type="number" value="10">
+
+<button onclick="calc()">Розрахувати</button>
+
+<div class="result" id="result">
+
+Матеріал: - <br>
+Електроенергія: - <br>
+Знос обладнання: - <br>
+Зарплата оператора: - <br>
+<br>
+<strong>Загальна вартість: -</strong>
+
+</div>
+
+</div>
+
+<script>
+
+function calc(){
+
+let materialPrice = Number(document.getElementById("materialPrice").value);
+let materialUsed = Number(document.getElementById("materialUsed").value);
+let printTime = Number(document.getElementById("printTime").value);
+let power = Number(document.getElementById("power").value);
+let electricPrice = Number(document.getElementById("electricPrice").value);
+let wear = Number(document.getElementById("wear").value);
+let salaryHour = Number(document.getElementById("salaryHour").value);
+let post = Number(document.getElementById("post").value);
+let extra = Number(document.getElementById("extra").value);
+
+let materialCost = materialPrice * materialUsed;
+
+let electricity =
+(power/1000) * printTime * electricPrice;
+
+let wearCost =
+printTime * wear;
+
+let salary =
+printTime * salaryHour;
+
+let total =
+materialCost +
+electricity +
+wearCost +
+salary +
+post +
+extra;
+
+document.getElementById("result").innerHTML =
+
+"Матеріал: " + materialCost.toFixed(2) + " грн<br>" +
+"Електроенергія: " + electricity.toFixed(2) + " грн<br>" +
+"Знос обладнання: " + wearCost.toFixed(2) + " грн<br>" +
+"Зарплата оператора: " + salary.toFixed(2) + " грн<br><br>" +
+"<strong>Загальна вартість: " + total.toFixed(2) + " грн</strong>";
+
+}
+
+</script>
+
+</body>
+</html>
