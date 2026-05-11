@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     <style>
@@ -46,16 +45,17 @@
 
         .carousel-container {
             position: relative;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
+            overflow: hidden;
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
         }
 
         .carousel-slide {
-            scroll-snap-align: start;
-            flex-shrink: 0;
-            width: 100%;
+            flex: 0 0 100%;
         }
 
         .carousel-img {
@@ -71,7 +71,7 @@
             transform: translateY(-50%);
             background: rgba(0, 0, 0, 0.5);
             color: white;
-            border-radius: 999px;
+            border-radius: 50%;
             width: 32px;
             height: 32px;
             display: flex;
@@ -79,11 +79,38 @@
             justify-content: center;
             cursor: pointer;
             z-index: 10;
-            transition: 0.2s;
         }
 
-        .carousel-btn:hover {
-            background: rgba(0, 0, 0, 0.8);
+        .carousel-btn-left {
+            left: 10px;
+        }
+
+        .carousel-btn-right {
+            right: 10px;
+        }
+
+        .carousel-dots {
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: white;
+            transform: scale(1.2);
         }
 
         .qty-control {
@@ -115,29 +142,62 @@
             font-weight: 500;
         }
     </style>
+    <link rel="shortcut icon" href="favicon/" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon/favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="favicon/favicon-512x512.png">
+
+    <!-- Apple Touch Icon (iOS) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+
+    <!-- Опціонально: маніфест для PWA (дозволяє встановити сайт на телефон) -->
+    <link rel="manifest" href="favicon/site.webmanifest">
 </head>
 
 <body class="font-sans antialiased">
 
-    <div id="app" class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div class="flex flex-wrap justify-between items-center border-b border-green-200 pb-4 mb-6">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-leaf text-3xl text-green-700"></i>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Фермерський кошик</h1>
-                <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">свіжі овочі та ягоди</span>
+    <div id="app">
+        <!-- НОВА ШАПКА -->
+        <header
+            class="bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-green-100 transition-all">
+            <div
+                class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-3 flex flex-wrap items-center justify-between gap-3">
+                <a href="/" class="flex items-center gap-3 group no-underline">
+                    <!-- Логотип (змініть src на свій) -->
+                    <img src="/logo.png" alt="Farm Logo"
+                        class="w-30 h-20 md:w-30 md:h-20 rounded-xl shadow-md transition duration-300 group-hover:rotate-3 group-hover:shadow-lg">
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-black tracking-tight">
+                            <span
+                                class="bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Фермерський
+                                кошик</span>
+                        </h1>
+                        <p class="text-xs text-gray-500 hidden sm:block">свіжі овочі та ягоди з доставкою</p>
+                    </div>
+                </a>
+                <div class="flex gap-2">
+                    <button id="userOrdersBtn"
+                        class="bg-white hover:bg-green-50 border border-gray-200 hover:border-green-300 px-3 py-2 rounded-full shadow-sm flex items-center gap-2 transition">
+                        <i class="fas fa-clipboard-list text-green-600"></i>
+                        <span class="hidden sm:inline text-gray-700">Мої замовлення</span>
+                    </button>
+                    <button id="openCartBtn"
+                        class="relative bg-white hover:bg-green-50 border border-gray-200 hover:border-green-300 px-4 py-2 rounded-full shadow-sm flex items-center gap-2 transition">
+                        <i class="fas fa-shopping-basket text-green-600 text-lg"></i>
+                        <span class="hidden sm:inline font-medium text-gray-700">Кошик</span>
+                        <span id="cartCountBadge"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 shadow-md font-semibold">0</span>
+                    </button>
+                </div>
             </div>
-            <button id="openCartBtn"
-                class="relative bg-white border border-gray-300 hover:border-green-500 px-4 py-2 rounded-full shadow-sm flex items-center gap-2 transition">
-                <i class="fas fa-shopping-basket text-green-700"></i>
-                <span>Кошик</span>
-                <span id="cartCountBadge"
-                    class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
-            </button>
+        </header>
+
+        <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
         </div>
 
-        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-
-        <!-- Модал кошика -->
+        <!-- Модал кошика (без змін) -->
         <div id="cartModal"
             class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
             <div class="bg-white rounded-2xl max-w-lg w-full mx-4 max-h-[85vh] flex flex-col shadow-2xl">
@@ -158,7 +218,7 @@
             </div>
         </div>
 
-        <!-- Модал форми замовлення -->
+        <!-- Модал форми замовлення (без змін) -->
         <div id="orderFormModal"
             class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
             <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl">
@@ -172,6 +232,10 @@
                         class="w-full border px-3 py-2 rounded-lg"></textarea>
                     <textarea id="customerComment" rows="2" placeholder="Коментар до замовлення"
                         class="w-full border px-3 py-2 rounded-lg"></textarea>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="needCallback" class="w-5 h-5 text-green-600">
+                        <span class="text-gray-700">📞 Потрібне уточнення за телефоном перед доставкою</span>
+                    </label>
                 </div>
                 <div class="flex gap-3 mt-6">
                     <button id="submitOrderBtn"
@@ -181,11 +245,31 @@
                 </div>
             </div>
         </div>
+
+        <!-- НОВИЙ МОДАЛ: МОЇ ЗАМОВЛЕННЯ -->
+        <div id="userOrdersModal"
+            class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-2xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col shadow-2xl">
+                <div class="flex justify-between items-center p-5 border-b">
+                    <h2 class="text-xl font-bold"><i class="fas fa-history text-green-700 mr-2"></i>Мої замовлення</h2>
+                    <button id="closeUserOrdersBtn" class="text-gray-500 hover:text-black text-2xl">&times;</button>
+                </div>
+                <div id="userOrdersContent" class="flex-1 overflow-y-auto p-4">
+                    <p class="text-gray-500 text-center">Введіть номер телефону, щоб переглянути замовлення</p>
+                    <div class="flex gap-2 mt-3">
+                        <input type="tel" id="userPhoneInput" placeholder="Номер телефону (наприклад, 0991234567)"
+                            class="flex-1 border rounded-lg px-3 py-2">
+                        <button id="loadUserOrdersBtn"
+                            class="bg-green-600 text-white px-4 py-2 rounded-lg">Показати</button>
+                    </div>
+                    <div id="ordersListContainer" class="mt-4 space-y-4"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // -------------------- ВАШІ НАЛАШТУВАННЯ FIREBASE --------------------
-        // ВСТАВТЕ СЮДИ СВІЙ КОНФІГ ФАЙРБЕЙЗ (з консолі Firebase)
+        // -------------------- FIREBASE КОНФІГ (ВАШ) --------------------
         const firebaseConfig = {
             apiKey: "AIzaSyDfnd8GywyOO6g4DHroSayWggN8QcJ47iA",
             authDomain: "shpak-farmer.firebaseapp.com",
@@ -194,16 +278,15 @@
             messagingSenderId: "994536266662",
             appId: "1:994536266662:web:0b3343b2ce971b8b508d67"
         };
-        // --------------------------------------------------------------------
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         const STEP = 0.25;
-        let products = [];        // кеш
-        let cart = [];            // кошик у пам'яті, синхронізується з Firestore
-        let currentUserCartId = null; // ідентифікатор документа кошика для цього браузера
+        let products = [];
+        let cart = [];
+        let currentUserCartId = null;
 
-        // Генерація унікального ID для кошика (зберігається в sessionStorage)
+        // ---- Ініціалізація кошика та товарів (без змін) ----
         function getCartId() {
             let cartId = sessionStorage.getItem('farm_cart_id');
             if (!cartId) {
@@ -213,50 +296,30 @@
             return cartId;
         }
 
-        // Завантаження товарів з Firestore в реальному часі
         function subscribeToProducts() {
             db.collection('products').onSnapshot(snapshot => {
                 products = [];
-                snapshot.forEach(doc => {
-                    products.push({ id: doc.id, ...doc.data() });
-                });
+                snapshot.forEach(doc => { products.push({ id: doc.id, ...doc.data() }); });
                 renderAll();
             });
         }
 
-        // Завантаження кошика поточного користувача (за id сесії)
         async function loadCart() {
             const cartId = getCartId();
             currentUserCartId = cartId;
             const docRef = db.collection('carts').doc(cartId);
             docRef.onSnapshot(doc => {
-                if (doc.exists) {
-                    cart = doc.data().items || [];
-                } else {
-                    cart = [];
-                    docRef.set({ items: [] }); // створюємо порожній кошик
-                }
+                if (doc.exists) cart = doc.data().items || [];
+                else { cart = []; docRef.set({ items: [] }); }
                 renderAll();
             });
         }
 
-        // Зберегти кошик у Firestore
         async function saveCart() {
             if (!currentUserCartId) return;
             await db.collection('carts').doc(currentUserCartId).set({ items: cart });
         }
 
-        // Оновлення кількості товару на складі (транзакція для уникнення конфліктів)
-        async function updateProductQuantity(productId, newQuantity, blocked = false) {
-            const productRef = db.collection('products').doc(productId);
-            await db.runTransaction(async (transaction) => {
-                const doc = await transaction.get(productRef);
-                if (!doc.exists) throw new Error("Товар не існує");
-                transaction.update(productRef, { quantity: newQuantity, blocked: blocked });
-            });
-        }
-
-        // Додавання/зміна товару в кошику
         async function addToCartWithQuantity(productId, qtyKg) {
             const product = products.find(p => p.id === productId);
             if (!product || product.blocked || product.quantity <= 0) { alert('Товар недоступний'); return; }
@@ -267,11 +330,8 @@
             if (product.quantity - currentInCart <= STEP && product.quantity - currentInCart === qtyKg) {
                 if (!confirm("⚠️ Це останній доступний товар! Додати?")) return;
             }
-            if (existingIndex !== -1) {
-                cart[existingIndex].quantity = parseFloat((cart[existingIndex].quantity + qtyKg).toFixed(2));
-            } else {
-                cart.push({ id: productId, quantity: parseFloat(qtyKg.toFixed(2)) });
-            }
+            if (existingIndex !== -1) cart[existingIndex].quantity = parseFloat((cart[existingIndex].quantity + qtyKg).toFixed(2));
+            else cart.push({ id: productId, quantity: parseFloat(qtyKg.toFixed(2)) });
             await saveCart();
             renderAll();
             showToast(`✅ Додано ${qtyKg.toFixed(2)} кг`);
@@ -282,9 +342,7 @@
             if (!prod) return;
             const itemIndex = cart.findIndex(c => c.id === productId);
             if (itemIndex === -1 && delta > 0) {
-                if (delta <= prod.quantity && !prod.blocked) {
-                    cart.push({ id: productId, quantity: parseFloat(delta.toFixed(2)) });
-                }
+                if (delta <= prod.quantity && !prod.blocked) cart.push({ id: productId, quantity: parseFloat(delta.toFixed(2)) });
             } else if (itemIndex !== -1) {
                 let newQty = parseFloat((cart[itemIndex].quantity + delta).toFixed(2));
                 if (newQty <= 0) cart.splice(itemIndex, 1);
@@ -295,16 +353,16 @@
             renderAll();
         }
 
-        // Оформлення замовлення
+        // Оформлення замовлення (без змін, але додамо збереження телефону для кабінету)
         async function submitOrder() {
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
             if (!name || !phone) { alert("Вкажіть ім'я та телефон"); return; }
             const address = document.getElementById('customerAddress').value.trim();
             const comment = document.getElementById('customerComment').value.trim();
+            const needCallback = document.getElementById('needCallback').checked;
             if (cart.length === 0) { alert("Кошик порожній"); return; }
 
-            // Перевіряємо актуальність залишків
             for (let item of cart) {
                 const prod = products.find(p => p.id === item.id);
                 if (!prod || prod.blocked || prod.quantity < item.quantity) {
@@ -313,7 +371,6 @@
                 }
             }
 
-            // Формуємо замовлення
             const orderItems = cart.map(item => {
                 const prod = products.find(p => p.id === item.id);
                 return { id: prod.id, name: prod.name, price: prod.price, quantity: item.quantity, total: prod.price * item.quantity };
@@ -322,13 +379,13 @@
             const newOrder = {
                 id: Date.now().toString(),
                 date: new Date().toISOString(),
-                customer: { name, phone, address, comment },
+                customer: { name, phone, address, comment, needCallback },
                 items: orderItems,
                 total,
-                status: 'нове'
+                status: 'нове',
+                viewed: false
             };
 
-            // Оновлюємо залишки товарів у транзакції
             const batch = db.batch();
             for (let item of cart) {
                 const prodRef = db.collection('products').doc(item.id);
@@ -336,10 +393,8 @@
                 const newQty = parseFloat((prod.quantity - item.quantity).toFixed(2));
                 batch.update(prodRef, { quantity: newQty, blocked: newQty === 0 });
             }
-            // Зберігаємо замовлення
-            const orderRef = db.collection('orders').doc();
+            const orderRef = db.collection('orders').doc(newOrder.id);
             batch.set(orderRef, newOrder);
-            // Очищаємо кошик
             const cartRef = db.collection('carts').doc(currentUserCartId);
             batch.update(cartRef, { items: [] });
             await batch.commit();
@@ -348,9 +403,172 @@
             closeOrderFormModal();
             closeCartModal();
             showToast("🎉 Замовлення прийнято!");
+
+            // Після оформлення – зберігаємо номер телефону в localStorage для кабінету
+            localStorage.setItem('last_user_phone', phone);
         }
 
-        // ---------- UI helpers (майже без змін, крім роботи з Firebase) ----------
+        // ---- КАБІНЕТ КОРИСТУВАЧА (НОВИЙ КОД) ----
+        let phoneListenerUnsubscribe = null;
+
+        function openUserOrdersModal() {
+            document.getElementById('userOrdersModal').classList.remove('hidden');
+            const savedPhone = localStorage.getItem('last_user_phone');
+            if (savedPhone) {
+                document.getElementById('userPhoneInput').value = savedPhone;
+                fetchAndDisplayOrders(savedPhone);
+            } else {
+                document.getElementById('ordersListContainer').innerHTML = '<p class="text-gray-400 text-center">Введіть номер телефону, щоб переглянути замовлення</p>';
+            }
+        }
+
+        function closeUserOrdersModal() {
+            document.getElementById('userOrdersModal').classList.add('hidden');
+            if (phoneListenerUnsubscribe) {
+                phoneListenerUnsubscribe();
+                phoneListenerUnsubscribe = null;
+            }
+        }
+
+        async function fetchAndDisplayOrders(phone) {
+            if (!phone) {
+                alert("Введіть номер телефону");
+                return;
+            }
+            const container = document.getElementById('ordersListContainer');
+            container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Завантаження...</div>';
+
+            // Відписатися від старого слухача
+            if (phoneListenerUnsubscribe) phoneListenerUnsubscribe();
+
+            // Реальний час: підписуємось на замовлення з цим номером
+            const q = db.collection('orders').where('customer.phone', '==', phone).orderBy('date', 'desc');
+            phoneListenerUnsubscribe = q.onSnapshot(snapshot => {
+                if (snapshot.empty) {
+                    container.innerHTML = '<p class="text-gray-500 text-center">У вас поки що немає замовлень.</p>';
+                    return;
+                }
+                let html = '';
+                snapshot.forEach(doc => {
+                    const order = doc.data();
+                    const statusColors = {
+                        'нове': 'bg-red-100 text-red-700',
+                        'підтверджено': 'bg-blue-100 text-blue-700',
+                        'в дорозі': 'bg-orange-100 text-orange-700',
+                        'виконано': 'bg-green-100 text-green-700',
+                        'скасовано': 'bg-gray-200 text-gray-600'
+                    };
+                    const statusColor = statusColors[order.status] || 'bg-gray-100';
+                    const needCallbackHtml = order.customer.needCallback ? '<span class="ml-2 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs"><i class="fas fa-phone"></i> Потрібен дзвінок</span>' : '';
+                    html += `
+                    <div class="border rounded-xl p-4 bg-gray-50">
+                        <div class="flex flex-wrap justify-between items-start gap-2 border-b pb-2">
+                            <div><span class="font-bold">№ ${order.id.slice(-6)}</span><span class="text-sm text-gray-500 ml-2">${new Date(order.date).toLocaleString()}</span></div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded-full text-xs ${statusColor}">${order.status}</span>
+                                ${needCallbackHtml}
+                            </div>
+                        </div>
+                        <div class="mt-2"><i class="fas fa-map-marker-alt"></i> Адреса: ${escapeHtml(order.customer.address || 'не вказано')}</div>
+                        <div class="mt-2 text-sm"><span class="font-semibold">Товари:</span>
+                            <ul class="list-disc ml-5">${order.items.map(i => `<li>${i.name} - ${i.quantity} кг × ${i.price} = ${i.total} грн</li>`).join('')}</ul>
+                        </div>
+                        <div class="mt-2 flex justify-between items-center">
+                            <span class="font-bold text-green-700">Сума: ${order.total} грн</span>
+                            ${order.customer.comment ? `<span class="text-xs text-gray-500"><i class="fas fa-comment"></i> ${escapeHtml(order.customer.comment)}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+                });
+                container.innerHTML = html;
+            }, error => {
+                console.error("Помилка завантаження замовлень:", error);
+                container.innerHTML = '<p class="text-red-500 text-center">Помилка завантаження. Спробуйте пізніше.</p>';
+            });
+        }
+
+        // ---- Інші UI функції (без змін) ----
+        function createCarousel(images) {
+            if (!images.length) images = ['https://via.placeholder.com/400x200?text=Немає+фото'];
+            const container = document.createElement('div');
+            container.className = 'carousel-container';
+            const track = document.createElement('div');
+            track.className = 'carousel-track';
+            images.forEach(img => {
+                const slide = document.createElement('div');
+                slide.className = 'carousel-slide';
+                const imgEl = document.createElement('img');
+                imgEl.src = img;
+                imgEl.className = 'carousel-img';
+                imgEl.onerror = () => { imgEl.src = 'https://via.placeholder.com/400x200?text=Фото+недоступне'; };
+                slide.appendChild(imgEl);
+                track.appendChild(slide);
+            });
+            container.appendChild(track);
+            let currentIndex = 0, intervalId = null;
+            function updateCarousel(index) {
+                if (index < 0) index = 0;
+                if (index >= images.length) index = images.length - 1;
+                currentIndex = index;
+                track.style.transform = `translateX(${-currentIndex * 100}%)`;
+                const dots = container.querySelectorAll('.dot');
+                dots.forEach((dot, i) => { if (i === currentIndex) dot.classList.add('active'); else dot.classList.remove('active'); });
+            }
+            if (images.length > 1) {
+                const leftBtn = document.createElement('div');
+                leftBtn.className = 'carousel-btn carousel-btn-left';
+                leftBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                leftBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let newIndex = currentIndex - 1;
+                    if (newIndex < 0) newIndex = images.length - 1;
+                    updateCarousel(newIndex);
+                    resetAutoPlay();
+                });
+                const rightBtn = document.createElement('div');
+                rightBtn.className = 'carousel-btn carousel-btn-right';
+                rightBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                rightBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let newIndex = currentIndex + 1;
+                    if (newIndex >= images.length) newIndex = 0;
+                    updateCarousel(newIndex);
+                    resetAutoPlay();
+                });
+                container.appendChild(leftBtn);
+                container.appendChild(rightBtn);
+                const dotsContainer = document.createElement('div');
+                dotsContainer.className = 'carousel-dots';
+                for (let i = 0; i < images.length; i++) {
+                    const dot = document.createElement('div');
+                    dot.classList.add('dot');
+                    if (i === 0) dot.classList.add('active');
+                    dot.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        updateCarousel(i);
+                        resetAutoPlay();
+                    });
+                    dotsContainer.appendChild(dot);
+                }
+                container.appendChild(dotsContainer);
+                function startAutoPlay() {
+                    if (intervalId) clearInterval(intervalId);
+                    intervalId = setInterval(() => {
+                        let newIndex = currentIndex + 1;
+                        if (newIndex >= images.length) newIndex = 0;
+                        updateCarousel(newIndex);
+                    }, 5000);
+                }
+                function resetAutoPlay() { if (intervalId) clearInterval(intervalId); startAutoPlay(); }
+                startAutoPlay();
+                container.addEventListener('mouseenter', () => { if (intervalId) clearInterval(intervalId); });
+                container.addEventListener('mouseleave', startAutoPlay);
+                container.addEventListener('touchstart', () => { if (intervalId) clearInterval(intervalId); });
+                container.addEventListener('touchend', startAutoPlay);
+            }
+            return container;
+        }
+
         function renderProductsGrid() {
             const grid = document.getElementById('productsGrid');
             if (!grid) return;
@@ -390,7 +608,6 @@
                 card.appendChild(carousel);
                 card.appendChild(infoDiv);
                 grid.appendChild(card);
-
                 if (!isOut) {
                     let currentQty = STEP;
                     const qtySpan = document.getElementById(`qty-val-${prod.id}`);
@@ -398,57 +615,21 @@
                     const decrBtn = card.querySelector('.decr-home');
                     const incrBtn = card.querySelector('.incr-home');
                     const addBtn = card.querySelector('.add-to-cart-btn');
-                    if (decrBtn) decrBtn.addEventListener('click', () => {
+                    decrBtn?.addEventListener('click', () => {
                         let newVal = currentQty - STEP;
                         if (newVal >= STEP) currentQty = parseFloat(newVal.toFixed(2));
                         else currentQty = STEP;
                         updateDisplay();
                     });
-                    if (incrBtn) incrBtn.addEventListener('click', () => {
+                    incrBtn?.addEventListener('click', () => {
                         let newVal = currentQty + STEP;
                         if (newVal <= prod.quantity) currentQty = parseFloat(newVal.toFixed(2));
                         else currentQty = prod.quantity;
                         updateDisplay();
                     });
-                    if (addBtn) addBtn.addEventListener('click', () => {
-                        addToCartWithQuantity(prod.id, currentQty);
-                    });
+                    addBtn?.addEventListener('click', () => addToCartWithQuantity(prod.id, currentQty));
                 }
             });
-        }
-
-        function createCarousel(images) {
-            if (!images.length) images = ['https://via.placeholder.com/400x200?text=Немає+фото'];
-            const container = document.createElement('div');
-            container.className = 'relative';
-            const wrapper = document.createElement('div');
-            wrapper.className = 'carousel-container flex overflow-x-auto scroll-smooth';
-            wrapper.style.scrollSnapType = 'x mandatory';
-            images.forEach(img => {
-                const slide = document.createElement('div');
-                slide.className = 'carousel-slide flex-shrink-0 w-full';
-                slide.style.scrollSnapAlign = 'start';
-                const imgEl = document.createElement('img');
-                imgEl.src = img;
-                imgEl.className = 'carousel-img';
-                imgEl.onerror = () => { imgEl.src = 'https://via.placeholder.com/400x200?text=Фото+недоступне'; };
-                slide.appendChild(imgEl);
-                wrapper.appendChild(slide);
-            });
-            container.appendChild(wrapper);
-            if (images.length > 1) {
-                const leftBtn = document.createElement('div');
-                leftBtn.className = 'carousel-btn left-2';
-                leftBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-                leftBtn.addEventListener('click', () => wrapper.scrollBy({ left: -wrapper.clientWidth, behavior: 'smooth' }));
-                const rightBtn = document.createElement('div');
-                rightBtn.className = 'carousel-btn right-2';
-                rightBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-                rightBtn.addEventListener('click', () => wrapper.scrollBy({ left: wrapper.clientWidth, behavior: 'smooth' }));
-                container.appendChild(leftBtn);
-                container.appendChild(rightBtn);
-            }
-            return container;
         }
 
         function renderCartModal() {
@@ -482,43 +663,40 @@
                 container.appendChild(row);
             });
             totalSpan.innerText = total.toFixed(2);
-            document.querySelectorAll('.cart-incr').forEach(btn => {
-                btn.addEventListener('click', (e) => changeCartQuantity(parseInt(btn.getAttribute('data-id')), STEP));
-            });
-            document.querySelectorAll('.cart-decr').forEach(btn => {
-                btn.addEventListener('click', (e) => changeCartQuantity(parseInt(btn.getAttribute('data-id')), -STEP));
-            });
+            document.querySelectorAll('.cart-incr').forEach(btn => btn.addEventListener('click', (e) => changeCartQuantity(parseInt(btn.dataset.id), STEP)));
+            document.querySelectorAll('.cart-decr').forEach(btn => btn.addEventListener('click', (e) => changeCartQuantity(parseInt(btn.dataset.id), -STEP)));
         }
 
-        function renderAll() {
-            renderProductsGrid();
-            updateCartBadge();
-            if (cartModalVisible) renderCartModal();
-        }
-
+        function renderAll() { renderProductsGrid(); updateCartBadge(); if (cartModalVisible) renderCartModal(); }
         function updateCartBadge() {
             const badge = document.getElementById('cartCountBadge');
             const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
             badge.innerText = totalItems.toFixed(2);
             badge.classList.toggle('hidden', totalItems === 0);
         }
-
         let cartModalVisible = false;
         function openCartModal() { cartModalVisible = true; renderCartModal(); document.getElementById('cartModal').classList.remove('hidden'); }
         function closeCartModal() { cartModalVisible = false; document.getElementById('cartModal').classList.add('hidden'); }
         function openOrderForm() { if (cart.length === 0) alert("Кошик порожній"); else document.getElementById('orderFormModal').classList.remove('hidden'); }
-        function closeOrderFormModal() { document.getElementById('orderFormModal').classList.add('hidden'); document.getElementById('customerName').value = ''; document.getElementById('customerPhone').value = ''; document.getElementById('customerAddress').value = ''; document.getElementById('customerComment').value = ''; }
+        function closeOrderFormModal() { document.getElementById('orderFormModal').classList.add('hidden');['customerName', 'customerPhone', 'customerAddress', 'customerComment'].forEach(id => document.getElementById(id).value = ''); document.getElementById('needCallback').checked = false; }
         function showToast(msg) { const t = document.createElement('div'); t.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-5 py-2 rounded-full z-50 text-sm shadow-lg'; t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
 
+        // Події
         document.getElementById('openCartBtn').addEventListener('click', openCartModal);
         document.getElementById('closeCartBtn').addEventListener('click', closeCartModal);
         document.getElementById('checkoutBtn').addEventListener('click', openOrderForm);
         document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
         document.getElementById('cancelOrderBtn').addEventListener('click', closeOrderFormModal);
-        window.onclick = e => { if (e.target === document.getElementById('cartModal')) closeCartModal(); if (e.target === document.getElementById('orderFormModal')) closeOrderFormModal(); };
+        document.getElementById('userOrdersBtn').addEventListener('click', openUserOrdersModal);
+        document.getElementById('closeUserOrdersBtn').addEventListener('click', closeUserOrdersModal);
+        document.getElementById('loadUserOrdersBtn').addEventListener('click', () => {
+            const phone = document.getElementById('userPhoneInput').value.trim();
+            if (phone) fetchAndDisplayOrders(phone);
+            else alert("Введіть номер телефону");
+        });
+        window.onclick = e => { if (e.target === document.getElementById('cartModal')) closeCartModal(); if (e.target === document.getElementById('orderFormModal')) closeOrderFormModal(); if (e.target === document.getElementById('userOrdersModal')) closeUserOrdersModal(); };
 
-        // Запуск
         subscribeToProducts();
         loadCart();
     </script>

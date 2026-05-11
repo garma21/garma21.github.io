@@ -71,40 +71,14 @@
             }
         }
 
-        .status-badge {
-            padding: 2px 8px;
-            border-radius: 20px;
+        .status-select {
             font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .status-new {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .status-confirmed {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .status-shipped {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-completed {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .status-cancelled {
-            background: #e5e7eb;
-            color: #4b5563;
+            padding: 2px 6px;
+            border-radius: 20px;
+            background: white;
+            border: 1px solid #ccc;
         }
     </style>
-    <!-- Стандартний favicon (ICO, 16x16 + 32x32) -->
     <link rel="shortcut icon" href="favicon/" type="image/x-icon">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
@@ -183,7 +157,7 @@
     </div>
 
     <script>
-        // -------------------- FIREBASE КОНФІГ (той самий) --------------------
+        // -------------------- FIREBASE КОНФІГ (вставте свій) --------------------
         const firebaseConfig = {
             apiKey: "AIzaSyDfnd8GywyOO6g4DHroSayWggN8QcJ47iA",
             authDomain: "shpak-farmer.firebaseapp.com",
@@ -208,24 +182,20 @@
             });
         }
 
-        // Підписка на замовлення зі сповіщеннями
+        // Підписка на замовлення + оновлення лічильника нових
         function subscribeToOrders() {
             db.collection('orders').orderBy('date', 'desc').onSnapshot(snapshot => {
                 orders = [];
                 snapshot.forEach(doc => orders.push({ id: doc.id, ...doc.data() }));
                 renderOrdersList();
-                // Перевірка нових замовлень (додані документи з viewed === false)
-                let newOrders = snapshot.docChanges().filter(change => change.type === 'added' && !change.doc.data().viewed);
-                if (newOrders.length > 0) {
-                    newOrders.forEach(orderChange => {
-                        const orderData = orderChange.doc.data();
-                        showNotification(`🛒 Нове замовлення від ${orderData.customer.name}`);
+                updateUnviewedCount();
+                // Сповіщення про нові (якщо viewed === false)
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added' && !change.doc.data().viewed) {
+                        showNotification(`🛒 Нове замовлення від ${change.doc.data().customer.name}`);
                         playSound();
-                    });
-                    updateUnviewedCount();
-                } else {
-                    updateUnviewedCount();
-                }
+                    }
+                });
             });
         }
 
@@ -241,7 +211,7 @@
             }
         }
 
-        // Позначити всі замовлення як переглянуті (після переходу на вкладку замовлень)
+        // Позначити всі замовлення як переглянуті (при переході на вкладку)
         async function markAllOrdersAsViewed() {
             const snapshot = await db.collection('orders').where('viewed', '==', false).get();
             const batch = db.batch();
@@ -252,12 +222,12 @@
             updateUnviewedCount();
         }
 
-        // Зміна статусу замовлення
+        // ОНОВЛЕННЯ СТАТУСУ (нова функція)
         async function updateOrderStatus(orderId, newStatus) {
             await db.collection('orders').doc(orderId).update({ status: newStatus });
         }
 
-        // Сповіщення (toast)
+        // Сповіщення (звук + toast)
         function showNotification(message) {
             const toast = document.createElement('div');
             toast.className = 'toast-notify';
@@ -265,7 +235,6 @@
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
         }
-
         function playSound() {
             try {
                 const context = new (window.AudioContext || window.webkitAudioContext)();
@@ -281,11 +250,10 @@
             } catch (e) { console.log("Звук не підтримується"); }
         }
 
-        // Редагування товарів
+        // ---------- Робота з товарами ----------
         async function updateProductPrice(productId, newPrice) {
             await db.collection('products').doc(productId).update({ price: newPrice });
         }
-
         async function updateProductQuantity(productId, newQuantity) {
             await db.collection('products').doc(productId).update({ quantity: newQuantity });
             if (newQuantity === 0) await db.collection('products').doc(productId).update({ blocked: true });
@@ -294,17 +262,14 @@
                 if (doc.data().blocked && newQuantity > 0) await db.collection('products').doc(productId).update({ blocked: false });
             }
         }
-
         async function toggleBlock(productId, currentBlocked) {
             await db.collection('products').doc(productId).update({ blocked: !currentBlocked });
         }
-
         async function deleteProduct(productId) {
             if (confirm("Видалити товар?")) {
                 await db.collection('products').doc(productId).delete();
             }
         }
-
         async function editImages(productId, currentImages) {
             let newUrls = prompt('Введіть URL фото (через кому або новий рядок):', (currentImages || []).join('\n'));
             if (newUrls !== null) {
@@ -312,6 +277,41 @@
                 if (urls.length === 0) urls = ['https://via.placeholder.com/400x200?text=Без+фото'];
                 await db.collection('products').doc(productId).update({ images: urls });
             }
+        }
+        async function addProduct() {
+            const name = document.getElementById('prodName').value.trim();
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const quantity = parseFloat(document.getElementById('prodQuantity').value);
+            const category = document.getElementById('prodCategory').value;
+            if (!name || isNaN(price) || isNaN(quantity) || price <= 0 || quantity < 0) { alert("Заповніть правильно"); return; }
+            let images = [];
+            const urlsText = document.getElementById('prodImagesUrls').value;
+            if (urlsText.trim()) images = urlsText.split(/\r?\n/).filter(u => u.trim());
+            const files = document.getElementById('prodImagesFiles').files;
+            const fileReaders = [];
+            for (let file of files) {
+                const reader = new FileReader();
+                const promise = new Promise((resolve) => { reader.onload = e => resolve(e.target.result); });
+                reader.readAsDataURL(file);
+                fileReaders.push(promise);
+            }
+            const base64Images = await Promise.all(fileReaders);
+            images.push(...base64Images);
+            if (images.length === 0) images = ['https://via.placeholder.com/400x200?text=Без+фото'];
+            const newProduct = {
+                name, price, quantity, category,
+                blocked: quantity === 0,
+                images: images,
+                createdAt: new Date().toISOString()
+            };
+            await db.collection('products').add(newProduct);
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodPrice').value = '';
+            document.getElementById('prodQuantity').value = '';
+            document.getElementById('prodImagesUrls').value = '';
+            document.getElementById('prodImagesFiles').value = '';
+            document.getElementById('imagePreviews').innerHTML = '';
+            alert("Товар додано");
         }
 
         function renderAdminProducts() {
@@ -344,17 +344,15 @@
                 </div>
             `;
                 container.appendChild(div);
-                const priceInput = div.querySelector('.price-input');
-                priceInput.addEventListener('change', (e) => updateProductPrice(prod.id, parseFloat(e.target.value)));
-                const qtyInput = div.querySelector('.qty-input');
-                qtyInput.addEventListener('change', (e) => updateProductQuantity(prod.id, parseFloat(e.target.value)));
+                div.querySelector('.price-input').addEventListener('change', (e) => updateProductPrice(prod.id, parseFloat(e.target.value)));
+                div.querySelector('.qty-input').addEventListener('change', (e) => updateProductQuantity(prod.id, parseFloat(e.target.value)));
                 div.querySelector('.toggle-block').addEventListener('click', () => toggleBlock(prod.id, prod.blocked));
                 div.querySelector('.edit-images').addEventListener('click', () => editImages(prod.id, prod.images));
                 div.querySelector('.delete-product').addEventListener('click', () => deleteProduct(prod.id));
             });
         }
 
-        // Відображення списку замовлень з випадаючим статусом
+        // ---------- Відображення замовлень із можливістю зміни статусу ----------
         function renderOrdersList() {
             const container = document.getElementById('ordersList');
             if (!container) return;
@@ -366,21 +364,28 @@
             orders.forEach(order => {
                 const div = document.createElement('div');
                 div.className = 'border rounded-xl p-4 bg-white hover:shadow-md transition';
-                div.setAttribute('data-order-id', order.id);
+                // Кольори статусів
+                const statusColors = {
+                    'нове': 'bg-red-100 text-red-700',
+                    'підтверджено': 'bg-blue-100 text-blue-700',
+                    'в дорозі': 'bg-orange-100 text-orange-700',
+                    'виконано': 'bg-green-100 text-green-700',
+                    'скасовано': 'bg-gray-200 text-gray-600'
+                };
+                const statusColor = statusColors[order.status] || 'bg-gray-100';
                 const needCallbackHtml = order.customer.needCallback ? '<span class="ml-2 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs"><i class="fas fa-phone mr-1"></i>Потрібен дзвінок</span>' : '';
-                const statusClass = getStatusClass(order.status);
                 div.innerHTML = `
-                <div class="flex justify-between flex-wrap items-start border-b pb-2">
+                <div class="flex flex-wrap justify-between items-start gap-2 border-b pb-2">
                     <div><span class="font-bold">№ ${order.id.slice(-6)}</span><span class="text-sm text-gray-500 ml-2">${new Date(order.date).toLocaleString()}</span></div>
-                    <div class="flex items-center gap-2">
-                        <select class="status-select text-sm border rounded px-2 py-1" data-id="${order.id}">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="px-2 py-0.5 rounded-full text-xs ${statusColor}">${order.status}</span>
+                        <select class="status-select border rounded px-1 py-0.5 text-xs" data-id="${order.id}">
                             <option value="нове" ${order.status === 'нове' ? 'selected' : ''}>нове</option>
                             <option value="підтверджено" ${order.status === 'підтверджено' ? 'selected' : ''}>підтверджено</option>
                             <option value="в дорозі" ${order.status === 'в дорозі' ? 'selected' : ''}>в дорозі</option>
                             <option value="виконано" ${order.status === 'виконано' ? 'selected' : ''}>виконано</option>
                             <option value="скасовано" ${order.status === 'скасовано' ? 'selected' : ''}>скасовано</option>
                         </select>
-                        <span class="status-badge ${statusClass}">${order.status}</span>
                         ${needCallbackHtml}
                     </div>
                 </div>
@@ -394,79 +399,24 @@
                 </div>
             `;
                 container.appendChild(div);
+                // Обробка зміни статусу
                 const statusSelect = div.querySelector('.status-select');
-                statusSelect.addEventListener('change', (e) => {
+                statusSelect.addEventListener('change', async (e) => {
                     const newStatus = e.target.value;
-                    updateOrderStatus(order.id, newStatus);
-                    // Оновлюємо відображення статусу в бейджі
-                    const badgeSpan = div.querySelector('.status-badge');
-                    badgeSpan.className = `status-badge ${getStatusClass(newStatus)}`;
-                    badgeSpan.innerText = newStatus;
+                    await updateOrderStatus(order.id, newStatus);
+                    // Можна додати локальне оновлення без перезавантаження, але воно і так прийде через onSnapshot
                 });
-                // При кліку на замовлення позначаємо як переглянуте (якщо ще ні)
-                if (!order.viewed) {
-                    div.addEventListener('click', async (e) => {
-                        if (e.target.tagName === 'SELECT') return;
-                        await markOrderAsViewed(order.id);
-                        const newBadge = div.querySelector('.text-xs.bg-red-100');
-                        if (newBadge) newBadge.remove();
-                    });
-                }
+                // При кліку на саме замовлення позначити як переглянуте (крім кліку на select)
+                div.addEventListener('click', async (e) => {
+                    if (e.target.tagName === 'SELECT') return;
+                    if (!order.viewed) {
+                        await db.collection('orders').doc(order.id).update({ viewed: true });
+                        // Приховати бейдж "Нове"
+                        const badge = div.querySelector('.text-xs.bg-red-100');
+                        if (badge) badge.remove();
+                    }
+                });
             });
-        }
-
-        async function markOrderAsViewed(orderId) {
-            await db.collection('orders').doc(orderId).update({ viewed: true });
-            updateUnviewedCount();
-        }
-
-        function getStatusClass(status) {
-            switch (status) {
-                case 'нове': return 'status-new';
-                case 'підтверджено': return 'status-confirmed';
-                case 'в дорозі': return 'status-shipped';
-                case 'виконано': return 'status-completed';
-                case 'скасовано': return 'status-cancelled';
-                default: return 'status-new';
-            }
-        }
-
-        async function addProduct() {
-            const name = document.getElementById('prodName').value.trim();
-            const price = parseFloat(document.getElementById('prodPrice').value);
-            const quantity = parseFloat(document.getElementById('prodQuantity').value);
-            const category = document.getElementById('prodCategory').value;
-            if (!name || isNaN(price) || isNaN(quantity) || price <= 0 || quantity < 0) { alert("Заповніть правильно"); return; }
-            let images = [];
-            const urlsText = document.getElementById('prodImagesUrls').value;
-            if (urlsText.trim()) images = urlsText.split(/\r?\n/).filter(u => u.trim());
-            const files = document.getElementById('prodImagesFiles').files;
-            const fileReaders = [];
-            for (let file of files) {
-                const reader = new FileReader();
-                const promise = new Promise((resolve) => {
-                    reader.onload = e => resolve(e.target.result);
-                });
-                reader.readAsDataURL(file);
-                fileReaders.push(promise);
-            }
-            const base64Images = await Promise.all(fileReaders);
-            images.push(...base64Images);
-            if (images.length === 0) images = ['https://via.placeholder.com/400x200?text=Без+фото'];
-            const newProduct = {
-                name, price, quantity, category,
-                blocked: quantity === 0,
-                images: images,
-                createdAt: new Date().toISOString()
-            };
-            await db.collection('products').add(newProduct);
-            document.getElementById('prodName').value = '';
-            document.getElementById('prodPrice').value = '';
-            document.getElementById('prodQuantity').value = '';
-            document.getElementById('prodImagesUrls').value = '';
-            document.getElementById('prodImagesFiles').value = '';
-            document.getElementById('imagePreviews').innerHTML = '';
-            alert("Товар додано");
         }
 
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
@@ -491,7 +441,7 @@
             tabOrders.classList.remove('text-gray-500');
             tabProducts.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
             tabProducts.classList.add('text-gray-500');
-            // При переході на вкладку замовлень позначаємо всі як переглянуті
+            // При переході на вкладку замовлень - позначаємо всі як переглянуті
             await markAllOrdersAsViewed();
         });
 
