@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Фермерський кошик | Свіжі овочі та ягоди</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #faf9f6;
+        }
+
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.1);
+        }
+
+        .out-of-stock {
+            filter: grayscale(0.4);
+            opacity: 0.7;
+            background-color: #e5e7eb;
+        }
+
+        .last-item-badge {
+            background: #f59e0b;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .carousel-container {
+            position: relative;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .carousel-slide {
+            scroll-snap-align: start;
+            flex-shrink: 0;
+            width: 100%;
+        }
+
+        .carousel-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #f3f4f6;
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border-radius: 999px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: 0.2s;
+        }
+
+        .carousel-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .qty-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 40px;
+        }
+
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            user-select: none;
+        }
+
+        .qty-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body class="font-sans antialiased">
+
+    <div id="app" class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div class="flex flex-wrap justify-between items-center border-b border-green-200 pb-4 mb-6">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-leaf text-3xl text-green-700"></i>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Фермерський кошик</h1>
+                <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">свіжі овочі та ягоди</span>
+            </div>
+            <button id="openCartBtn"
+                class="relative bg-white border border-gray-300 hover:border-green-500 px-4 py-2 rounded-full shadow-sm flex items-center gap-2 transition">
+                <i class="fas fa-shopping-basket text-green-700"></i>
+                <span>Кошик</span>
+                <span id="cartCountBadge"
+                    class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+            </button>
+        </div>
+
+        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+
+        <!-- Модал кошика -->
+        <div id="cartModal"
+            class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-2xl max-w-lg w-full mx-4 max-h-[85vh] flex flex-col shadow-2xl">
+                <div class="flex justify-between items-center p-5 border-b">
+                    <h2 class="text-xl font-bold"><i class="fas fa-shopping-cart text-green-700 mr-2"></i>Кошик</h2>
+                    <button id="closeCartBtn" class="text-gray-500 hover:text-black text-2xl">&times;</button>
+                </div>
+                <div id="cartItemsList" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+                <div class="p-4 border-t bg-gray-50">
+                    <div class="flex justify-between font-bold text-lg mb-3">
+                        <span>Загалом:</span>
+                        <span id="cartTotal">0</span> <span>грн</span>
+                    </div>
+                    <button id="checkoutBtn"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition">Оформити
+                        замовлення ✅</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модал форми замовлення -->
+        <div id="orderFormModal"
+            class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl">
+                <h3 class="text-xl font-bold mb-4">📝 Деталі доставки</h3>
+                <div class="space-y-3">
+                    <input type="text" id="customerName" placeholder="Ваше ім'я *"
+                        class="w-full border px-3 py-2 rounded-lg">
+                    <input type="tel" id="customerPhone" placeholder="Телефон *"
+                        class="w-full border px-3 py-2 rounded-lg">
+                    <textarea id="customerAddress" rows="2" placeholder="Адреса доставки"
+                        class="w-full border px-3 py-2 rounded-lg"></textarea>
+                    <textarea id="customerComment" rows="2" placeholder="Коментар до замовлення"
+                        class="w-full border px-3 py-2 rounded-lg"></textarea>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button id="submitOrderBtn"
+                        class="flex-1 bg-green-600 text-white py-2 rounded-xl font-semibold">Підтвердити</button>
+                    <button id="cancelOrderBtn"
+                        class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-xl">Скасувати</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // -------------------- ВАШІ НАЛАШТУВАННЯ FIREBASE --------------------
+        // ВСТАВТЕ СЮДИ СВІЙ КОНФІГ ФАЙРБЕЙЗ (з консолі Firebase)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfnd8GywyOO6g4DHroSayWggN8QcJ47iA",
+            authDomain: "shpak-farmer.firebaseapp.com",
+            projectId: "shpak-farmer",
+            storageBucket: "shpak-farmer.firebasestorage.app",
+            messagingSenderId: "994536266662",
+            appId: "1:994536266662:web:0b3343b2ce971b8b508d67"
+        };
+        // --------------------------------------------------------------------
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const STEP = 0.25;
+        let products = [];        // кеш
+        let cart = [];            // кошик у пам'яті, синхронізується з Firestore
+        let currentUserCartId = null; // ідентифікатор документа кошика для цього браузера
+
+        // Генерація унікального ID для кошика (зберігається в sessionStorage)
+        function getCartId() {
+            let cartId = sessionStorage.getItem('farm_cart_id');
+            if (!cartId) {
+                cartId = 'cart_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+                sessionStorage.setItem('farm_cart_id', cartId);
+            }
+            return cartId;
+        }
+
+        // Завантаження товарів з Firestore в реальному часі
+        function subscribeToProducts() {
+            db.collection('products').onSnapshot(snapshot => {
+                products = [];
+                snapshot.forEach(doc => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+                renderAll();
+            });
+        }
+
+        // Завантаження кошика поточного користувача (за id сесії)
+        async function loadCart() {
+            const cartId = getCartId();
+            currentUserCartId = cartId;
+            const docRef = db.collection('carts').doc(cartId);
+            docRef.onSnapshot(doc => {
+                if (doc.exists) {
+                    cart = doc.data().items || [];
+                } else {
+                    cart = [];
+                    docRef.set({ items: [] }); // створюємо порожній кошик
+                }
+                renderAll();
+            });
+        }
+
+        // Зберегти кошик у Firestore
+        async function saveCart() {
+            if (!currentUserCartId) return;
+            await db.collection('carts').doc(currentUserCartId).set({ items: cart });
+        }
+
+        // Оновлення кількості товару на складі (транзакція для уникнення конфліктів)
+        async function updateProductQuantity(productId, newQuantity, blocked = false) {
+            const productRef = db.collection('products').doc(productId);
+            await db.runTransaction(async (transaction) => {
+                const doc = await transaction.get(productRef);
+                if (!doc.exists) throw new Error("Товар не існує");
+                transaction.update(productRef, { quantity: newQuantity, blocked: blocked });
+            });
+        }
+
+        // Додавання/зміна товару в кошику
+        async function addToCartWithQuantity(productId, qtyKg) {
+            const product = products.find(p => p.id === productId);
+            if (!product || product.blocked || product.quantity <= 0) { alert('Товар недоступний'); return; }
+            if (qtyKg > product.quantity) { alert(`Доступно лише ${product.quantity} кг`); return; }
+            const existingIndex = cart.findIndex(item => item.id === productId);
+            const currentInCart = existingIndex !== -1 ? cart[existingIndex].quantity : 0;
+            if (currentInCart + qtyKg > product.quantity) { alert(`Не можна додати більше, ніж є на складі. Залишилось ${(product.quantity - currentInCart).toFixed(2)} кг`); return; }
+            if (product.quantity - currentInCart <= STEP && product.quantity - currentInCart === qtyKg) {
+                if (!confirm("⚠️ Це останній доступний товар! Додати?")) return;
+            }
+            if (existingIndex !== -1) {
+                cart[existingIndex].quantity = parseFloat((cart[existingIndex].quantity + qtyKg).toFixed(2));
+            } else {
+                cart.push({ id: productId, quantity: parseFloat(qtyKg.toFixed(2)) });
+            }
+            await saveCart();
+            renderAll();
+            showToast(`✅ Додано ${qtyKg.toFixed(2)} кг`);
+        }
+
+        async function changeCartQuantity(productId, delta) {
+            const prod = products.find(p => p.id === productId);
+            if (!prod) return;
+            const itemIndex = cart.findIndex(c => c.id === productId);
+            if (itemIndex === -1 && delta > 0) {
+                if (delta <= prod.quantity && !prod.blocked) {
+                    cart.push({ id: productId, quantity: parseFloat(delta.toFixed(2)) });
+                }
+            } else if (itemIndex !== -1) {
+                let newQty = parseFloat((cart[itemIndex].quantity + delta).toFixed(2));
+                if (newQty <= 0) cart.splice(itemIndex, 1);
+                else if (newQty <= prod.quantity) cart[itemIndex].quantity = newQty;
+                else alert(`Максимум ${prod.quantity} кг`);
+            }
+            await saveCart();
+            renderAll();
+        }
+
+        // Оформлення замовлення
+        async function submitOrder() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            if (!name || !phone) { alert("Вкажіть ім'я та телефон"); return; }
+            const address = document.getElementById('customerAddress').value.trim();
+            const comment = document.getElementById('customerComment').value.trim();
+            if (cart.length === 0) { alert("Кошик порожній"); return; }
+
+            // Перевіряємо актуальність залишків
+            for (let item of cart) {
+                const prod = products.find(p => p.id === item.id);
+                if (!prod || prod.blocked || prod.quantity < item.quantity) {
+                    alert(`Товар "${prod?.name}" змінив наявність. Оновіть кошик.`);
+                    return;
+                }
+            }
+
+            // Формуємо замовлення
+            const orderItems = cart.map(item => {
+                const prod = products.find(p => p.id === item.id);
+                return { id: prod.id, name: prod.name, price: prod.price, quantity: item.quantity, total: prod.price * item.quantity };
+            });
+            const total = orderItems.reduce((s, i) => s + i.total, 0);
+            const newOrder = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                customer: { name, phone, address, comment },
+                items: orderItems,
+                total,
+                status: 'нове'
+            };
+
+            // Оновлюємо залишки товарів у транзакції
+            const batch = db.batch();
+            for (let item of cart) {
+                const prodRef = db.collection('products').doc(item.id);
+                const prod = products.find(p => p.id === item.id);
+                const newQty = parseFloat((prod.quantity - item.quantity).toFixed(2));
+                batch.update(prodRef, { quantity: newQty, blocked: newQty === 0 });
+            }
+            // Зберігаємо замовлення
+            const orderRef = db.collection('orders').doc();
+            batch.set(orderRef, newOrder);
+            // Очищаємо кошик
+            const cartRef = db.collection('carts').doc(currentUserCartId);
+            batch.update(cartRef, { items: [] });
+            await batch.commit();
+
+            cart = [];
+            closeOrderFormModal();
+            closeCartModal();
+            showToast("🎉 Замовлення прийнято!");
+        }
+
+        // ---------- UI helpers (майже без змін, крім роботи з Firebase) ----------
+        function renderProductsGrid() {
+            const grid = document.getElementById('productsGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            products.forEach(prod => {
+                const isOut = prod.blocked || prod.quantity <= 0;
+                const isLast = (prod.quantity === STEP && !isOut);
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 card-hover ${isOut ? 'out-of-stock' : ''}`;
+                const carousel = createCarousel(prod.images || []);
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'p-4';
+                infoDiv.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">${prod.category === 'ягоди' ? '🍓 Ягоди' : '🥒 Овочі'}</span>
+                    ${isLast ? '<span class="last-item-badge"><i class="fas fa-star-of-life mr-1"></i>Останній!</span>' : ''}
+                </div>
+                <h3 class="text-xl font-bold mt-2 text-gray-800">${escapeHtml(prod.name)}</h3>
+                <div class="flex justify-between items-baseline mt-3">
+                    <div><span class="text-2xl font-bold text-green-700">${prod.price}</span><span class="text-gray-500"> грн/кг</span></div>
+                    <div class="text-sm text-gray-500"><i class="fas fa-weight-hanging"></i> ${prod.quantity} кг</div>
+                </div>
+                <div class="mt-4">
+                    ${isOut ?
+                        `<button disabled class="w-full bg-gray-300 text-gray-500 py-2 rounded-xl cursor-not-allowed">Немає в наявності</button>` :
+                        `<div class="flex items-center justify-between gap-2">
+                            <div class="qty-control">
+                                <span class="qty-btn decr-home" data-id="${prod.id}">−</span>
+                                <span class="qty-value" id="qty-val-${prod.id}">${STEP.toFixed(2)}</span>
+                                <span class="qty-btn incr-home" data-id="${prod.id}">+</span>
+                            </div>
+                            <button data-id="${prod.id}" class="add-to-cart-btn flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl transition shadow-sm"><i class="fas fa-cart-plus mr-1"></i> Додати</button>
+                        </div>`
+                    }
+                </div>
+            `;
+                card.appendChild(carousel);
+                card.appendChild(infoDiv);
+                grid.appendChild(card);
+
+                if (!isOut) {
+                    let currentQty = STEP;
+                    const qtySpan = document.getElementById(`qty-val-${prod.id}`);
+                    const updateDisplay = () => { if (qtySpan) qtySpan.innerText = currentQty.toFixed(2); };
+                    const decrBtn = card.querySelector('.decr-home');
+                    const incrBtn = card.querySelector('.incr-home');
+                    const addBtn = card.querySelector('.add-to-cart-btn');
+                    if (decrBtn) decrBtn.addEventListener('click', () => {
+                        let newVal = currentQty - STEP;
+                        if (newVal >= STEP) currentQty = parseFloat(newVal.toFixed(2));
+                        else currentQty = STEP;
+                        updateDisplay();
+                    });
+                    if (incrBtn) incrBtn.addEventListener('click', () => {
+                        let newVal = currentQty + STEP;
+                        if (newVal <= prod.quantity) currentQty = parseFloat(newVal.toFixed(2));
+                        else currentQty = prod.quantity;
+                        updateDisplay();
+                    });
+                    if (addBtn) addBtn.addEventListener('click', () => {
+                        addToCartWithQuantity(prod.id, currentQty);
+                    });
+                }
+            });
+        }
+
+        function createCarousel(images) {
+            if (!images.length) images = ['https://via.placeholder.com/400x200?text=Немає+фото'];
+            const container = document.createElement('div');
+            container.className = 'relative';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'carousel-container flex overflow-x-auto scroll-smooth';
+            wrapper.style.scrollSnapType = 'x mandatory';
+            images.forEach(img => {
+                const slide = document.createElement('div');
+                slide.className = 'carousel-slide flex-shrink-0 w-full';
+                slide.style.scrollSnapAlign = 'start';
+                const imgEl = document.createElement('img');
+                imgEl.src = img;
+                imgEl.className = 'carousel-img';
+                imgEl.onerror = () => { imgEl.src = 'https://via.placeholder.com/400x200?text=Фото+недоступне'; };
+                slide.appendChild(imgEl);
+                wrapper.appendChild(slide);
+            });
+            container.appendChild(wrapper);
+            if (images.length > 1) {
+                const leftBtn = document.createElement('div');
+                leftBtn.className = 'carousel-btn left-2';
+                leftBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                leftBtn.addEventListener('click', () => wrapper.scrollBy({ left: -wrapper.clientWidth, behavior: 'smooth' }));
+                const rightBtn = document.createElement('div');
+                rightBtn.className = 'carousel-btn right-2';
+                rightBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                rightBtn.addEventListener('click', () => wrapper.scrollBy({ left: wrapper.clientWidth, behavior: 'smooth' }));
+                container.appendChild(leftBtn);
+                container.appendChild(rightBtn);
+            }
+            return container;
+        }
+
+        function renderCartModal() {
+            const container = document.getElementById('cartItemsList');
+            const totalSpan = document.getElementById('cartTotal');
+            if (!container) return;
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">Кошик порожній.</div>';
+                totalSpan.innerText = '0';
+                return;
+            }
+            let total = 0;
+            container.innerHTML = '';
+            cart.forEach(item => {
+                const prod = products.find(p => p.id === item.id);
+                if (!prod) return;
+                const itemTotal = prod.price * item.quantity;
+                total += itemTotal;
+                const row = document.createElement('div');
+                row.className = 'flex justify-between items-center border-b pb-2';
+                row.innerHTML = `
+                <div><p class="font-medium">${escapeHtml(prod.name)}</p>
+                <div class="flex items-center gap-2 mt-1">
+                    <button class="cart-decr bg-gray-200 w-6 h-6 rounded-full" data-id="${prod.id}">-</button>
+                    <span class="mx-1 w-12 text-center">${item.quantity.toFixed(2)} кг</span>
+                    <button class="cart-incr bg-gray-200 w-6 h-6 rounded-full" data-id="${prod.id}">+</button>
+                    <span class="ml-2 text-green-700">${prod.price} грн/кг</span>
+                </div></div>
+                <div class="font-semibold">${itemTotal.toFixed(2)} грн</div>
+            `;
+                container.appendChild(row);
+            });
+            totalSpan.innerText = total.toFixed(2);
+            document.querySelectorAll('.cart-incr').forEach(btn => {
+                btn.addEventListener('click', (e) => changeCartQuantity(parseInt(btn.getAttribute('data-id')), STEP));
+            });
+            document.querySelectorAll('.cart-decr').forEach(btn => {
+                btn.addEventListener('click', (e) => changeCartQuantity(parseInt(btn.getAttribute('data-id')), -STEP));
+            });
+        }
+
+        function renderAll() {
+            renderProductsGrid();
+            updateCartBadge();
+            if (cartModalVisible) renderCartModal();
+        }
+
+        function updateCartBadge() {
+            const badge = document.getElementById('cartCountBadge');
+            const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
+            badge.innerText = totalItems.toFixed(2);
+            badge.classList.toggle('hidden', totalItems === 0);
+        }
+
+        let cartModalVisible = false;
+        function openCartModal() { cartModalVisible = true; renderCartModal(); document.getElementById('cartModal').classList.remove('hidden'); }
+        function closeCartModal() { cartModalVisible = false; document.getElementById('cartModal').classList.add('hidden'); }
+        function openOrderForm() { if (cart.length === 0) alert("Кошик порожній"); else document.getElementById('orderFormModal').classList.remove('hidden'); }
+        function closeOrderFormModal() { document.getElementById('orderFormModal').classList.add('hidden'); document.getElementById('customerName').value = ''; document.getElementById('customerPhone').value = ''; document.getElementById('customerAddress').value = ''; document.getElementById('customerComment').value = ''; }
+        function showToast(msg) { const t = document.createElement('div'); t.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-5 py-2 rounded-full z-50 text-sm shadow-lg'; t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
+        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+
+        document.getElementById('openCartBtn').addEventListener('click', openCartModal);
+        document.getElementById('closeCartBtn').addEventListener('click', closeCartModal);
+        document.getElementById('checkoutBtn').addEventListener('click', openOrderForm);
+        document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
+        document.getElementById('cancelOrderBtn').addEventListener('click', closeOrderFormModal);
+        window.onclick = e => { if (e.target === document.getElementById('cartModal')) closeCartModal(); if (e.target === document.getElementById('orderFormModal')) closeOrderFormModal(); };
+
+        // Запуск
+        subscribeToProducts();
+        loadCart();
+    </script>
+</body>
+
+</html>
