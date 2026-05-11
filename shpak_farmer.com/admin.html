@@ -36,7 +36,86 @@
             border-radius: 8px;
             border: 1px solid #ddd;
         }
+
+        .toast-notify {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2c3e2f;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 40px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeInOut 4s ease forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            10% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+                display: none;
+            }
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-new {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-confirmed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-shipped {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-cancelled {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
     </style>
+    <!-- Стандартний favicon (ICO, 16x16 + 32x32) -->
+    <link rel="shortcut icon" href="favicon/" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon/favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="favicon/favicon-512x512.png">
+
+    <!-- Apple Touch Icon (iOS) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+
+    <!-- Опціонально: маніфест для PWA (дозволяє встановити сайт на телефон) -->
+    <link rel="manifest" href="favicon/site.webmanifest">
 </head>
 
 <body class="bg-gray-50">
@@ -59,7 +138,11 @@
             <div class="flex gap-4 border-b mb-5">
                 <button id="tabProducts" class="py-2 px-4 font-semibold text-green-700 border-b-2 border-green-600">📦
                     Товари</button>
-                <button id="tabOrders" class="py-2 px-4 font-semibold text-gray-500">📋 Замовлення</button>
+                <button id="tabOrders" class="py-2 px-4 font-semibold text-gray-500 relative">
+                    📋 Замовлення
+                    <span id="newOrdersBadge"
+                        class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                </button>
             </div>
 
             <div id="productsSection">
@@ -100,7 +183,7 @@
     </div>
 
     <script>
-        // ВСТАВТЕ СЮДИ ТОЙ САМИЙ firebaseConfig, ЩО Й У index.html
+        // -------------------- FIREBASE КОНФІГ (той самий) --------------------
         const firebaseConfig = {
             apiKey: "AIzaSyDfnd8GywyOO6g4DHroSayWggN8QcJ47iA",
             authDomain: "shpak-farmer.firebaseapp.com",
@@ -113,20 +196,239 @@
         const db = firebase.firestore();
 
         let products = [];
+        let orders = [];
+        let unviewedCount = 0;
 
-        async function loadProducts() {
-            const snapshot = await db.collection('products').get();
-            products = [];
-            snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
-            renderAdminProducts();
-        }
-
+        // Підписка на товари
         function subscribeToProducts() {
             db.collection('products').onSnapshot(snapshot => {
                 products = [];
                 snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
                 renderAdminProducts();
             });
+        }
+
+        // Підписка на замовлення зі сповіщеннями
+        function subscribeToOrders() {
+            db.collection('orders').orderBy('date', 'desc').onSnapshot(snapshot => {
+                orders = [];
+                snapshot.forEach(doc => orders.push({ id: doc.id, ...doc.data() }));
+                renderOrdersList();
+                // Перевірка нових замовлень (додані документи з viewed === false)
+                let newOrders = snapshot.docChanges().filter(change => change.type === 'added' && !change.doc.data().viewed);
+                if (newOrders.length > 0) {
+                    newOrders.forEach(orderChange => {
+                        const orderData = orderChange.doc.data();
+                        showNotification(`🛒 Нове замовлення від ${orderData.customer.name}`);
+                        playSound();
+                    });
+                    updateUnviewedCount();
+                } else {
+                    updateUnviewedCount();
+                }
+            });
+        }
+
+        async function updateUnviewedCount() {
+            const snapshot = await db.collection('orders').where('viewed', '==', false).get();
+            unviewedCount = snapshot.size;
+            const badge = document.getElementById('newOrdersBadge');
+            if (unviewedCount > 0) {
+                badge.innerText = unviewedCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // Позначити всі замовлення як переглянуті (після переходу на вкладку замовлень)
+        async function markAllOrdersAsViewed() {
+            const snapshot = await db.collection('orders').where('viewed', '==', false).get();
+            const batch = db.batch();
+            snapshot.forEach(doc => {
+                batch.update(doc.ref, { viewed: true });
+            });
+            await batch.commit();
+            updateUnviewedCount();
+        }
+
+        // Зміна статусу замовлення
+        async function updateOrderStatus(orderId, newStatus) {
+            await db.collection('orders').doc(orderId).update({ status: newStatus });
+        }
+
+        // Сповіщення (toast)
+        function showNotification(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notify';
+            toast.innerHTML = `<i class="fas fa-shopping-cart mr-2"></i>${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function playSound() {
+            try {
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = context.createOscillator();
+                const gain = context.createGain();
+                oscillator.connect(gain);
+                gain.connect(context.destination);
+                oscillator.frequency.value = 800;
+                gain.gain.value = 0.3;
+                oscillator.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 0.5);
+                oscillator.stop(context.currentTime + 0.5);
+            } catch (e) { console.log("Звук не підтримується"); }
+        }
+
+        // Редагування товарів
+        async function updateProductPrice(productId, newPrice) {
+            await db.collection('products').doc(productId).update({ price: newPrice });
+        }
+
+        async function updateProductQuantity(productId, newQuantity) {
+            await db.collection('products').doc(productId).update({ quantity: newQuantity });
+            if (newQuantity === 0) await db.collection('products').doc(productId).update({ blocked: true });
+            else {
+                const doc = await db.collection('products').doc(productId).get();
+                if (doc.data().blocked && newQuantity > 0) await db.collection('products').doc(productId).update({ blocked: false });
+            }
+        }
+
+        async function toggleBlock(productId, currentBlocked) {
+            await db.collection('products').doc(productId).update({ blocked: !currentBlocked });
+        }
+
+        async function deleteProduct(productId) {
+            if (confirm("Видалити товар?")) {
+                await db.collection('products').doc(productId).delete();
+            }
+        }
+
+        async function editImages(productId, currentImages) {
+            let newUrls = prompt('Введіть URL фото (через кому або новий рядок):', (currentImages || []).join('\n'));
+            if (newUrls !== null) {
+                let urls = newUrls.split(/[ ,\n]+/).filter(u => u.trim());
+                if (urls.length === 0) urls = ['https://via.placeholder.com/400x200?text=Без+фото'];
+                await db.collection('products').doc(productId).update({ images: urls });
+            }
+        }
+
+        function renderAdminProducts() {
+            const container = document.getElementById('adminProductList');
+            if (!container) return;
+            container.innerHTML = '';
+            products.forEach(prod => {
+                const div = document.createElement('div');
+                div.className = 'border rounded-xl p-3 bg-gray-50';
+                div.innerHTML = `
+                <div class="flex flex-wrap gap-3 items-start">
+                    <div class="flex-1">
+                        <p class="font-semibold">${escapeHtml(prod.name)}</p>
+                        <div class="flex gap-2 mt-1 flex-wrap items-center">
+                            <input type="number" step="1" value="${prod.price}" class="w-24 border rounded p-1 text-sm price-input" data-id="${prod.id}">
+                            <span>грн/кг</span>
+                            <input type="number" step="0.5" value="${prod.quantity}" class="w-24 border rounded p-1 text-sm qty-input" data-id="${prod.id}">
+                            <span>кг</span>
+                        </div>
+                        <div class="flex gap-1 mt-2 flex-wrap">
+                            ${(prod.images || []).slice(0, 3).map(img => `<img src="${img}" class="image-thumb" onerror="this.src='https://via.placeholder.com/60'">`).join('')}
+                            ${prod.images?.length > 3 ? `<span class="text-xs text-gray-500">+${prod.images.length - 3}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <button class="toggle-block px-3 py-1 rounded-full text-sm ${prod.blocked ? 'bg-green-200' : 'bg-red-200'}" data-id="${prod.id}">${prod.blocked ? 'Розблокувати' : 'Заблокувати'}</button>
+                        <button class="edit-images bg-blue-100 px-3 py-1 rounded text-sm" data-id="${prod.id}"><i class="fas fa-images"></i> Фото</button>
+                        <button class="delete-product bg-red-100 px-3 py-1 rounded text-sm" data-id="${prod.id}">Видалити</button>
+                    </div>
+                </div>
+            `;
+                container.appendChild(div);
+                const priceInput = div.querySelector('.price-input');
+                priceInput.addEventListener('change', (e) => updateProductPrice(prod.id, parseFloat(e.target.value)));
+                const qtyInput = div.querySelector('.qty-input');
+                qtyInput.addEventListener('change', (e) => updateProductQuantity(prod.id, parseFloat(e.target.value)));
+                div.querySelector('.toggle-block').addEventListener('click', () => toggleBlock(prod.id, prod.blocked));
+                div.querySelector('.edit-images').addEventListener('click', () => editImages(prod.id, prod.images));
+                div.querySelector('.delete-product').addEventListener('click', () => deleteProduct(prod.id));
+            });
+        }
+
+        // Відображення списку замовлень з випадаючим статусом
+        function renderOrdersList() {
+            const container = document.getElementById('ordersList');
+            if (!container) return;
+            if (orders.length === 0) {
+                container.innerHTML = '<div class="text-gray-400 text-center">Немає замовлень</div>';
+                return;
+            }
+            container.innerHTML = '';
+            orders.forEach(order => {
+                const div = document.createElement('div');
+                div.className = 'border rounded-xl p-4 bg-white hover:shadow-md transition';
+                div.setAttribute('data-order-id', order.id);
+                const needCallbackHtml = order.customer.needCallback ? '<span class="ml-2 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs"><i class="fas fa-phone mr-1"></i>Потрібен дзвінок</span>' : '';
+                const statusClass = getStatusClass(order.status);
+                div.innerHTML = `
+                <div class="flex justify-between flex-wrap items-start border-b pb-2">
+                    <div><span class="font-bold">№ ${order.id.slice(-6)}</span><span class="text-sm text-gray-500 ml-2">${new Date(order.date).toLocaleString()}</span></div>
+                    <div class="flex items-center gap-2">
+                        <select class="status-select text-sm border rounded px-2 py-1" data-id="${order.id}">
+                            <option value="нове" ${order.status === 'нове' ? 'selected' : ''}>нове</option>
+                            <option value="підтверджено" ${order.status === 'підтверджено' ? 'selected' : ''}>підтверджено</option>
+                            <option value="в дорозі" ${order.status === 'в дорозі' ? 'selected' : ''}>в дорозі</option>
+                            <option value="виконано" ${order.status === 'виконано' ? 'selected' : ''}>виконано</option>
+                            <option value="скасовано" ${order.status === 'скасовано' ? 'selected' : ''}>скасовано</option>
+                        </select>
+                        <span class="status-badge ${statusClass}">${order.status}</span>
+                        ${needCallbackHtml}
+                    </div>
+                </div>
+                <div class="mt-2"><i class="fas fa-user"></i> ${escapeHtml(order.customer.name)} (${order.customer.phone})</div>
+                <div><i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.customer.address || 'не вказано')}</div>
+                ${order.customer.comment ? `<div><i class="fas fa-comment"></i> ${escapeHtml(order.customer.comment)}</div>` : ''}
+                <div class="mt-2 text-sm"><span class="font-semibold">Товари:</span><ul class="list-disc ml-5">${order.items.map(i => `<li>${i.name} - ${i.quantity} кг × ${i.price} = ${i.total} грн</li>`).join('')}</ul></div>
+                <div class="mt-2 flex justify-between items-center">
+                    <span class="font-bold text-green-700">Сума: ${order.total} грн</span>
+                    ${!order.viewed ? '<span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Нове</span>' : ''}
+                </div>
+            `;
+                container.appendChild(div);
+                const statusSelect = div.querySelector('.status-select');
+                statusSelect.addEventListener('change', (e) => {
+                    const newStatus = e.target.value;
+                    updateOrderStatus(order.id, newStatus);
+                    // Оновлюємо відображення статусу в бейджі
+                    const badgeSpan = div.querySelector('.status-badge');
+                    badgeSpan.className = `status-badge ${getStatusClass(newStatus)}`;
+                    badgeSpan.innerText = newStatus;
+                });
+                // При кліку на замовлення позначаємо як переглянуте (якщо ще ні)
+                if (!order.viewed) {
+                    div.addEventListener('click', async (e) => {
+                        if (e.target.tagName === 'SELECT') return;
+                        await markOrderAsViewed(order.id);
+                        const newBadge = div.querySelector('.text-xs.bg-red-100');
+                        if (newBadge) newBadge.remove();
+                    });
+                }
+            });
+        }
+
+        async function markOrderAsViewed(orderId) {
+            await db.collection('orders').doc(orderId).update({ viewed: true });
+            updateUnviewedCount();
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'нове': return 'status-new';
+                case 'підтверджено': return 'status-confirmed';
+                case 'в дорозі': return 'status-shipped';
+                case 'виконано': return 'status-completed';
+                case 'скасовано': return 'status-cancelled';
+                default: return 'status-new';
+            }
         }
 
         async function addProduct() {
@@ -140,18 +442,16 @@
             if (urlsText.trim()) images = urlsText.split(/\r?\n/).filter(u => u.trim());
             const files = document.getElementById('prodImagesFiles').files;
             const fileReaders = [];
-            if (files.length) {
-                for (let file of files) {
-                    const reader = new FileReader();
-                    const promise = new Promise((resolve) => {
-                        reader.onload = e => resolve(e.target.result);
-                    });
-                    reader.readAsDataURL(file);
-                    fileReaders.push(promise);
-                }
-                const base64Images = await Promise.all(fileReaders);
-                images.push(...base64Images);
+            for (let file of files) {
+                const reader = new FileReader();
+                const promise = new Promise((resolve) => {
+                    reader.onload = e => resolve(e.target.result);
+                });
+                reader.readAsDataURL(file);
+                fileReaders.push(promise);
             }
+            const base64Images = await Promise.all(fileReaders);
+            images.push(...base64Images);
             if (images.length === 0) images = ['https://via.placeholder.com/400x200?text=Без+фото'];
             const newProduct = {
                 name, price, quantity, category,
@@ -169,86 +469,6 @@
             alert("Товар додано");
         }
 
-        async function updateProductField(productId, field, value) {
-            await db.collection('products').doc(productId).update({ [field]: value });
-        }
-
-        async function deleteProduct(productId) {
-            if (confirm("Видалити товар?")) {
-                await db.collection('products').doc(productId).delete();
-            }
-        }
-
-        function renderAdminProducts() {
-            const container = document.getElementById('adminProductList');
-            if (!container) return;
-            container.innerHTML = '';
-            products.forEach(prod => {
-                const div = document.createElement('div');
-                div.className = 'border rounded-xl p-3 bg-gray-50';
-                div.innerHTML = `
-                <div class="flex flex-wrap gap-3 items-start">
-                    <div class="flex-1">
-                        <p class="font-semibold">${escapeHtml(prod.name)}</p>
-                        <p class="text-sm">${prod.price} грн/кг | ${prod.quantity} кг | ${prod.category}</p>
-                        <div class="flex gap-1 mt-1 flex-wrap">
-                            ${(prod.images || []).slice(0, 3).map(img => `<img src="${img}" class="image-thumb" onerror="this.src='https://via.placeholder.com/60'">`).join('')}
-                            ${prod.images?.length > 3 ? `<span class="text-xs text-gray-500">+${prod.images.length - 3}</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <input type="number" step="0.5" value="${prod.quantity}" class="w-24 border rounded p-1 text-sm qty-input" data-id="${prod.id}">
-                        <button class="toggle-block px-3 py-1 rounded-full text-sm ${prod.blocked ? 'bg-green-200' : 'bg-red-200'}" data-id="${prod.id}">${prod.blocked ? 'Розблокувати' : 'Заблокувати'}</button>
-                        <button class="edit-images bg-blue-100 px-3 py-1 rounded text-sm" data-id="${prod.id}"><i class="fas fa-images"></i> Фото</button>
-                        <button class="delete-product bg-red-100 px-3 py-1 rounded text-sm" data-id="${prod.id}">Видалити</button>
-                    </div>
-                </div>
-            `;
-                container.appendChild(div);
-                div.querySelector('.qty-input').addEventListener('change', (e) => {
-                    const newQty = parseFloat(e.target.value);
-                    if (!isNaN(newQty) && newQty >= 0) {
-                        updateProductField(prod.id, 'quantity', newQty);
-                        if (newQty === 0) updateProductField(prod.id, 'blocked', true);
-                        else if (prod.blocked && newQty > 0) updateProductField(prod.id, 'blocked', false);
-                    }
-                });
-                div.querySelector('.toggle-block').addEventListener('click', () => {
-                    updateProductField(prod.id, 'blocked', !prod.blocked);
-                });
-                div.querySelector('.edit-images').addEventListener('click', () => {
-                    let newUrls = prompt('Введіть URL фото (через кому або новий рядок):', (prod.images || []).join('\n'));
-                    if (newUrls !== null) {
-                        let urls = newUrls.split(/[ ,\n]+/).filter(u => u.trim());
-                        if (urls.length === 0) urls = ['https://via.placeholder.com/400x200?text=Без+фото'];
-                        updateProductField(prod.id, 'images', urls);
-                    }
-                });
-                div.querySelector('.delete-product').addEventListener('click', () => deleteProduct(prod.id));
-            });
-        }
-
-        async function renderOrders() {
-            const container = document.getElementById('ordersList');
-            if (!container) return;
-            const snapshot = await db.collection('orders').orderBy('date', 'desc').get();
-            if (snapshot.empty) { container.innerHTML = '<div class="text-gray-400 text-center">Немає замовлень</div>'; return; }
-            container.innerHTML = '';
-            snapshot.forEach(doc => {
-                const order = doc.data();
-                const div = document.createElement('div');
-                div.className = 'border rounded-xl p-4 bg-white';
-                div.innerHTML = `
-                <div class="flex justify-between border-b pb-2"><span class="font-bold">№ ${order.id}</span><span>${new Date(order.date).toLocaleString()}</span><span class="bg-green-100 px-2 rounded">${order.status}</span></div>
-                <div class="mt-2"><i class="fas fa-user"></i> ${escapeHtml(order.customer.name)} (${order.customer.phone})</div>
-                <div><i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.customer.address || 'не вказано')}</div>
-                <div class="mt-2 text-sm"><span class="font-semibold">Товари:</span><ul class="list-disc ml-5">${order.items.map(i => `<li>${i.name} - ${i.quantity} кг × ${i.price} = ${i.total} грн</li>`).join('')}</ul></div>
-                <div class="mt-2 flex justify-between"><span class="font-bold text-green-700">Сума: ${order.total} грн</span>${order.customer.comment ? `<span class="text-gray-500 text-sm"><i class="fas fa-comment"></i> ${escapeHtml(order.customer.comment)}</span>` : ''}</div>
-            `;
-                container.appendChild(div);
-            });
-        }
-
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
 
         // Вкладки
@@ -256,8 +476,24 @@
         const ordersSection = document.getElementById('ordersSection');
         const tabProducts = document.getElementById('tabProducts');
         const tabOrders = document.getElementById('tabOrders');
-        tabProducts.addEventListener('click', () => { productsSection.classList.remove('hidden'); ordersSection.classList.add('hidden'); tabProducts.classList.add('border-b-2', 'border-green-600', 'text-green-700'); tabProducts.classList.remove('text-gray-500'); tabOrders.classList.remove('border-b-2', 'border-green-600', 'text-green-700'); tabOrders.classList.add('text-gray-500'); });
-        tabOrders.addEventListener('click', async () => { ordersSection.classList.remove('hidden'); productsSection.classList.add('hidden'); tabOrders.classList.add('border-b-2', 'border-green-600', 'text-green-700'); tabOrders.classList.remove('text-gray-500'); tabProducts.classList.remove('border-b-2', 'border-green-600', 'text-green-700'); tabProducts.classList.add('text-gray-500'); await renderOrders(); });
+        tabProducts.addEventListener('click', () => {
+            productsSection.classList.remove('hidden');
+            ordersSection.classList.add('hidden');
+            tabProducts.classList.add('border-b-2', 'border-green-600', 'text-green-700');
+            tabProducts.classList.remove('text-gray-500');
+            tabOrders.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
+            tabOrders.classList.add('text-gray-500');
+        });
+        tabOrders.addEventListener('click', async () => {
+            ordersSection.classList.remove('hidden');
+            productsSection.classList.add('hidden');
+            tabOrders.classList.add('border-b-2', 'border-green-600', 'text-green-700');
+            tabOrders.classList.remove('text-gray-500');
+            tabProducts.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
+            tabProducts.classList.add('text-gray-500');
+            // При переході на вкладку замовлень позначаємо всі як переглянуті
+            await markAllOrdersAsViewed();
+        });
 
         document.getElementById('addProductBtn').addEventListener('click', addProduct);
         document.getElementById('loginBtn').addEventListener('click', () => {
@@ -266,7 +502,7 @@
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('adminContent').classList.remove('hidden');
                 subscribeToProducts();
-                renderOrders();
+                subscribeToOrders();
             } else alert('Невірний пароль');
         });
         document.getElementById('prodImagesFiles').addEventListener('change', function (e) {
