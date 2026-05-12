@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Фермерський кошик | Свіжі овочі та ягоди</title>
+    <title>Shpak Family Farm | Свіжі овочі, ягоди та зелень</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -218,10 +218,10 @@
                     <div>
                         <h1 class="text-xl md:text-2xl font-black tracking-tight">
                             <span
-                                class="bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Фермерський
-                                кошик</span>
+                                class="bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Shpak
+                                Family Farm</span>
                         </h1>
-                        <p class="text-xs text-gray-500 hidden sm:block">свіжі овочі та ягоди з доставкою</p>
+                        <p class="text-xs text-gray-500 hidden sm:block">свіжі овочі, ягоди та зелень з доставкою</p>
                     </div>
                 </div>
                 <div class="flex gap-2">
@@ -429,6 +429,15 @@
             await db.collection('carts').doc(currentUserCartId).set({ items: cart });
         }
 
+        function getCategoryLabel(category) {
+            const categories = {
+                'ягоди': '🍓 Ягоди',
+                'зелень': '🌿 Зелень',
+                'овочі': '🥒 Овочі'
+            };
+            return categories[category] || categories['овочі'];
+        }
+
         async function addToCartWithQuantity(productId, qtyKg) {
             const product = products.find(p => p.id === productId);
             if (!product || product.blocked || product.quantity <= 0) { alert('Товар недоступний'); return; }
@@ -528,7 +537,7 @@
             document.getElementById('detailProductName').innerText = product.name;
             document.getElementById('detailPrice').innerHTML = `${product.price} грн/кг`;
             document.getElementById('detailQuantity').innerText = product.quantity;
-            document.getElementById('detailCategory').innerHTML = product.category === 'ягоди' ? '🍓 Ягоди' : '🥒 Овочі';
+            document.getElementById('detailCategory').innerHTML = getCategoryLabel(product.category);
             document.getElementById('detailDescription').innerHTML = escapeHtml(product.description || 'Немає опису');
             document.getElementById('detailQtyValue').innerText = STEP.toFixed(2);
             renderDetailCarousel(product.images || []);
@@ -713,7 +722,7 @@
                 infoDiv.className = 'p-4';
                 infoDiv.innerHTML = `
                 <div class="flex justify-between items-start">
-                    <span class="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">${prod.category === 'ягоди' ? '🍓 Ягоди' : '🥒 Овочі'}</span>
+                    <span class="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">${getCategoryLabel(prod.category)}</span>
                     ${isLast ? '<span class="last-item-badge"><i class="fas fa-star-of-life mr-1"></i>Останній!</span>' : ''}
                 </div>
                 <h3 class="text-xl font-bold mt-2 text-gray-800">${escapeHtml(prod.name)}</h3>
