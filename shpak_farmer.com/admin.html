@@ -149,6 +149,7 @@
                         <select id="prodCategory" class="w-full border p-2 rounded mb-2">
                             <option value="овочі">Овочі</option>
                             <option value="ягоди">Ягоди</option>
+                            <option value="зелень">Зелень</option>
                         </select>
                         <textarea id="prodDescription" rows="3" placeholder="Опис товару (до 500 символів)"
                             class="w-full border p-2 rounded mb-2"></textarea>
@@ -769,10 +770,20 @@
         });
 
         // ---------- Запуск ----------
-        document.getElementById('addProductBtn').addEventListener('click', addProduct);
-        document.getElementById('loginBtn').addEventListener('click', () => {
+        const ADMIN_PASSWORD_HASH = 'f0ffc114a14e2414127d4a41518e618144783594fa6ecb635133e5ce51aa4837';
+
+        async function hashPassword(password) {
+            const encoded = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+            return Array.from(new Uint8Array(hashBuffer))
+                .map(byte => byte.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        async function loginAdmin() {
             const pwd = document.getElementById('adminPassword').value;
-            if (pwd === '1234') {
+            const pwdHash = await hashPassword(pwd);
+            if (pwdHash === ADMIN_PASSWORD_HASH) {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('adminContent').classList.remove('hidden');
                 subscribeToProducts();
@@ -780,6 +791,12 @@
                 initDragDrop();
                 window.pendingImages = [];
             } else alert('Невірний пароль');
+        }
+
+        document.getElementById('addProductBtn').addEventListener('click', addProduct);
+        document.getElementById('loginBtn').addEventListener('click', loginAdmin);
+        document.getElementById('adminPassword').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') loginAdmin();
         });
         document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
             if (window.pendingDeleteOrderId) {
