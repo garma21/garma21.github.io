@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Shpak Family Farm | Свіжі овочі та ягоди</title>
+    <title>Фермерський кошик | Свіжі овочі та ягоди</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -213,13 +213,13 @@
             <div
                 class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-3 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-3 group cursor-pointer" onclick="location.reload()">
-                    <img src="./logo.png" alt="Farm Logo"
-                        class="w-30 h-20 md:w-25 md:h-15 rounded-xl shadow-md transition duration-300 group-hover:rotate-3">
+                    <img src="https://placehold.co/56x56?text=🌿" alt="Farm Logo"
+                        class="w-10 h-10 md:w-12 md:h-12 rounded-xl shadow-md transition duration-300 group-hover:rotate-3">
                     <div>
                         <h1 class="text-xl md:text-2xl font-black tracking-tight">
                             <span
-                                class="bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Shpak
-                                Family Farm</span>
+                                class="bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Фермерський
+                                кошик</span>
                         </h1>
                         <p class="text-xs text-gray-500 hidden sm:block">свіжі овочі та ягоди з доставкою</p>
                     </div>
@@ -804,8 +804,8 @@
                 container.appendChild(row);
             });
             totalSpan.innerText = total.toFixed(2);
-            document.querySelectorAll('.cart-incr').forEach(btn => btn.addEventListener('click', (e) => changeCartQuantity(parseInt(btn.dataset.id), STEP)));
-            document.querySelectorAll('.cart-decr').forEach(btn => btn.addEventListener('click', (e) => changeCartQuantity(parseInt(btn.dataset.id), -STEP)));
+            document.querySelectorAll('.cart-incr').forEach(btn => btn.addEventListener('click', (e) => changeCartQuantity(btn.dataset.id, STEP)));
+            document.querySelectorAll('.cart-decr').forEach(btn => btn.addEventListener('click', (e) => changeCartQuantity(btn.dataset.id, -STEP)));
         }
 
         function renderAll() { renderProductsGrid(); updateCartBadge(); if (cartModalVisible) renderCartModal(); }
