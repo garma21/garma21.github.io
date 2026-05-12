@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Фермерський кошик | Свіжі овочі та ягоди</title>
+    <title>Shpak Family Farm | Свіжі овочі та ягоди</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -22,6 +22,7 @@
 
         .card-hover {
             transition: all 0.2s ease;
+            cursor: pointer;
         }
 
         .card-hover:hover {
@@ -43,6 +44,7 @@
             border-radius: 20px;
         }
 
+        /* Карусель */
         .carousel-container {
             position: relative;
             overflow: hidden;
@@ -63,6 +65,7 @@
             height: 200px;
             object-fit: cover;
             background: #f3f4f6;
+            cursor: pointer;
         }
 
         .carousel-btn {
@@ -141,6 +144,52 @@
             text-align: center;
             font-weight: 500;
         }
+
+        /* Детальний модал */
+        .detail-carousel-img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            cursor: pointer;
+            background: #f3f4f6;
+            border-radius: 1rem;
+        }
+
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .lightbox.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .lightbox-img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+        }
     </style>
     <link rel="shortcut icon" href="favicon/" type="image/x-icon">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
@@ -158,24 +207,23 @@
 <body class="font-sans antialiased">
 
     <div id="app">
-        <!-- НОВА ШАПКА -->
+        <!-- Шапка -->
         <header
             class="bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-green-100 transition-all">
             <div
                 class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-3 flex flex-wrap items-center justify-between gap-3">
-                <a href="/" class="flex items-center gap-3 group no-underline">
-                    <!-- Логотип (змініть src на свій) -->
+                <div class="flex items-center gap-3 group cursor-pointer" onclick="location.reload()">
                     <img src="./logo.png" alt="Farm Logo"
-                        class="w-30 h-20 md:w-30 md:h-20 rounded-xl shadow-md transition duration-300 group-hover:rotate-3 group-hover:shadow-lg">
+                        class="w-30 h-20 md:w-25 md:h-15 rounded-xl shadow-md transition duration-300 group-hover:rotate-3">
                     <div>
                         <h1 class="text-xl md:text-2xl font-black tracking-tight">
                             <span
-                                class="bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Фермерський
-                                кошик</span>
+                                class="bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Shpak
+                                Family Farm</span>
                         </h1>
                         <p class="text-xs text-gray-500 hidden sm:block">свіжі овочі та ягоди з доставкою</p>
                     </div>
-                </a>
+                </div>
                 <div class="flex gap-2">
                     <button id="userOrdersBtn"
                         class="bg-white hover:bg-green-50 border border-gray-200 hover:border-green-300 px-3 py-2 rounded-full shadow-sm flex items-center gap-2 transition">
@@ -197,7 +245,7 @@
             <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
         </div>
 
-        <!-- Модал кошика (без змін) -->
+        <!-- Модал кошика -->
         <div id="cartModal"
             class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
             <div class="bg-white rounded-2xl max-w-lg w-full mx-4 max-h-[85vh] flex flex-col shadow-2xl">
@@ -218,7 +266,7 @@
             </div>
         </div>
 
-        <!-- Модал форми замовлення (без змін) -->
+        <!-- Модал форми замовлення -->
         <div id="orderFormModal"
             class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
             <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl">
@@ -246,7 +294,7 @@
             </div>
         </div>
 
-        <!-- НОВИЙ МОДАЛ: МОЇ ЗАМОВЛЕННЯ -->
+        <!-- Модал "Мої замовлення" -->
         <div id="userOrdersModal"
             class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
             <div class="bg-white rounded-2xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col shadow-2xl">
@@ -254,7 +302,7 @@
                     <h2 class="text-xl font-bold"><i class="fas fa-history text-green-700 mr-2"></i>Мої замовлення</h2>
                     <button id="closeUserOrdersBtn" class="text-gray-500 hover:text-black text-2xl">&times;</button>
                 </div>
-                <div id="userOrdersContent" class="flex-1 overflow-y-auto p-4">
+                <div class="flex-1 overflow-y-auto p-4">
                     <p class="text-gray-500 text-center">Введіть номер телефону, щоб переглянути замовлення</p>
                     <div class="flex gap-2 mt-3">
                         <input type="tel" id="userPhoneInput" placeholder="Номер телефону (наприклад, 0991234567)"
@@ -266,10 +314,68 @@
                 </div>
             </div>
         </div>
+
+        <!-- Детальний модал товару -->
+        <div id="productDetailModal"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-all">
+            <div class="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col shadow-2xl">
+                <div class="flex justify-between items-center p-5 border-b">
+                    <h2 id="detailProductName" class="text-2xl font-bold text-gray-800"></h2>
+                    <button id="closeDetailModalBtn" class="text-gray-500 hover:text-black text-2xl">&times;</button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-5 grid md:grid-cols-2 gap-6">
+                    <!-- Галерея великих фото з каруселлю -->
+                    <div>
+                        <div class="relative">
+                            <div class="overflow-hidden rounded-xl" id="detailCarouselContainer">
+                                <div id="detailCarouselTrack" class="flex transition-transform duration-500"></div>
+                            </div>
+                            <button id="detailPrevBtn"
+                                class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center"><i
+                                    class="fas fa-chevron-left"></i></button>
+                            <button id="detailNextBtn"
+                                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center"><i
+                                    class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div id="detailDots" class="flex justify-center gap-2 mt-2"></div>
+                    </div>
+                    <!-- Інформація -->
+                    <div>
+                        <div class="text-3xl font-bold text-green-700 mb-2" id="detailPrice"></div>
+                        <div class="text-gray-600 mb-4"><i class="fas fa-weight-hanging"></i> <span
+                                id="detailQuantity"></span> кг</div>
+                        <div id="detailCategory"
+                            class="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm mb-4"></div>
+                        <div class="mt-4">
+                            <h3 class="font-semibold text-lg">Опис</h3>
+                            <p id="detailDescription" class="text-gray-600 mt-1 whitespace-pre-line"></p>
+                        </div>
+                        <div class="mt-6">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="qty-control">
+                                    <span class="qty-btn" id="detailDecr">−</span>
+                                    <span id="detailQtyValue" class="qty-value">0.25</span>
+                                    <span class="qty-btn" id="detailIncr">+</span>
+                                </div>
+                                <button id="detailAddToCartBtn"
+                                    class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl transition">Додати
+                                    до кошика</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lightbox для збільшення фотографій -->
+        <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+            <span class="lightbox-close">&times;</span>
+            <img id="lightboxImg" class="lightbox-img" src="">
+        </div>
     </div>
 
     <script>
-        // -------------------- FIREBASE КОНФІГ (ВАШ) --------------------
+        // ---------- FIREBASE КОНФІГ (вставте свій) ----------
         const firebaseConfig = {
             apiKey: "AIzaSyDfnd8GywyOO6g4DHroSayWggN8QcJ47iA",
             authDomain: "shpak-farmer.firebaseapp.com",
@@ -286,7 +392,10 @@
         let cart = [];
         let currentUserCartId = null;
 
-        // ---- Ініціалізація кошика та товарів (без змін) ----
+        let currentDetailProduct = null;
+        let detailCurrentIndex = 0;
+
+        // ---------- Кошик ----------
         function getCartId() {
             let cartId = sessionStorage.getItem('farm_cart_id');
             if (!cartId) {
@@ -299,7 +408,7 @@
         function subscribeToProducts() {
             db.collection('products').onSnapshot(snapshot => {
                 products = [];
-                snapshot.forEach(doc => { products.push({ id: doc.id, ...doc.data() }); });
+                snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
                 renderAll();
             });
         }
@@ -327,9 +436,7 @@
             const existingIndex = cart.findIndex(item => item.id === productId);
             const currentInCart = existingIndex !== -1 ? cart[existingIndex].quantity : 0;
             if (currentInCart + qtyKg > product.quantity) { alert(`Не можна додати більше, ніж є на складі. Залишилось ${(product.quantity - currentInCart).toFixed(2)} кг`); return; }
-            if (product.quantity - currentInCart <= STEP && product.quantity - currentInCart === qtyKg) {
-                if (!confirm("⚠️ Це останній доступний товар! Додати?")) return;
-            }
+            if (product.quantity - currentInCart <= STEP && product.quantity - currentInCart === qtyKg && !confirm("⚠️ Це останній доступний товар! Додати?")) return;
             if (existingIndex !== -1) cart[existingIndex].quantity = parseFloat((cart[existingIndex].quantity + qtyKg).toFixed(2));
             else cart.push({ id: productId, quantity: parseFloat(qtyKg.toFixed(2)) });
             await saveCart();
@@ -353,7 +460,6 @@
             renderAll();
         }
 
-        // Оформлення замовлення (без змін, але додамо збереження телефону для кабінету)
         async function submitOrder() {
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
@@ -362,7 +468,6 @@
             const comment = document.getElementById('customerComment').value.trim();
             const needCallback = document.getElementById('needCallback').checked;
             if (cart.length === 0) { alert("Кошик порожній"); return; }
-
             for (let item of cart) {
                 const prod = products.find(p => p.id === item.id);
                 if (!prod || prod.blocked || prod.quantity < item.quantity) {
@@ -370,7 +475,6 @@
                     return;
                 }
             }
-
             const orderItems = cart.map(item => {
                 const prod = products.find(p => p.id === item.id);
                 return { id: prod.id, name: prod.name, price: prod.price, quantity: item.quantity, total: prod.price * item.quantity };
@@ -385,7 +489,6 @@
                 status: 'нове',
                 viewed: false
             };
-
             const batch = db.batch();
             for (let item of cart) {
                 const prodRef = db.collection('products').doc(item.id);
@@ -398,97 +501,124 @@
             const cartRef = db.collection('carts').doc(currentUserCartId);
             batch.update(cartRef, { items: [] });
             await batch.commit();
-
             cart = [];
             closeOrderFormModal();
             closeCartModal();
             showToast("🎉 Замовлення прийнято!");
-
-            // Після оформлення – зберігаємо номер телефону в localStorage для кабінету
             localStorage.setItem('last_user_phone', phone);
         }
 
-        // ---- КАБІНЕТ КОРИСТУВАЧА (НОВИЙ КОД) ----
-        let phoneListenerUnsubscribe = null;
-
-        function openUserOrdersModal() {
-            document.getElementById('userOrdersModal').classList.remove('hidden');
-            const savedPhone = localStorage.getItem('last_user_phone');
-            if (savedPhone) {
-                document.getElementById('userPhoneInput').value = savedPhone;
-                fetchAndDisplayOrders(savedPhone);
-            } else {
-                document.getElementById('ordersListContainer').innerHTML = '<p class="text-gray-400 text-center">Введіть номер телефону, щоб переглянути замовлення</p>';
-            }
+        // ---------- Lightbox ----------
+        function openLightbox(src) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightboxImg');
+            lightboxImg.src = src;
+            lightbox.classList.add('active');
+        }
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
         }
 
-        function closeUserOrdersModal() {
-            document.getElementById('userOrdersModal').classList.add('hidden');
-            if (phoneListenerUnsubscribe) {
-                phoneListenerUnsubscribe();
-                phoneListenerUnsubscribe = null;
-            }
+        // ---------- Детальний модал ----------
+        function openDetailModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            currentDetailProduct = product;
+            detailCurrentIndex = 0;
+            document.getElementById('detailProductName').innerText = product.name;
+            document.getElementById('detailPrice').innerHTML = `${product.price} грн/кг`;
+            document.getElementById('detailQuantity').innerText = product.quantity;
+            document.getElementById('detailCategory').innerHTML = product.category === 'ягоди' ? '🍓 Ягоди' : '🥒 Овочі';
+            document.getElementById('detailDescription').innerHTML = escapeHtml(product.description || 'Немає опису');
+            document.getElementById('detailQtyValue').innerText = STEP.toFixed(2);
+            renderDetailCarousel(product.images || []);
+            document.getElementById('productDetailModal').classList.remove('hidden');
+            setupDetailEventListeners(product);
         }
 
-        async function fetchAndDisplayOrders(phone) {
-            if (!phone) {
-                alert("Введіть номер телефону");
-                return;
-            }
-            const container = document.getElementById('ordersListContainer');
-            container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Завантаження...</div>';
+        function renderDetailCarousel(images) {
+            const track = document.getElementById('detailCarouselTrack');
+            const dotsContainer = document.getElementById('detailDots');
+            if (!track) return;
+            track.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            if (!images.length) images = ['https://via.placeholder.com/400x300?text=Немає+фото'];
+            images.forEach((img, idx) => {
+                const slide = document.createElement('div');
+                slide.className = 'flex-shrink-0 w-full';
+                const imgEl = document.createElement('img');
+                imgEl.src = img;
+                imgEl.className = 'detail-carousel-img';
+                imgEl.onclick = () => openLightbox(img);
+                imgEl.style.cursor = 'pointer';
+                slide.appendChild(imgEl);
+                track.appendChild(slide);
+                const dot = document.createElement('div');
+                dot.className = `dot ${idx === 0 ? 'active' : ''}`;
+                dot.onclick = () => {
+                    detailCurrentIndex = idx;
+                    updateDetailCarousel();
+                };
+                dotsContainer.appendChild(dot);
+            });
+            updateDetailCarousel();
+        }
 
-            // Відписатися від старого слухача
-            if (phoneListenerUnsubscribe) phoneListenerUnsubscribe();
-
-            // Реальний час: підписуємось на замовлення з цим номером
-            const q = db.collection('orders').where('customer.phone', '==', phone).orderBy('date', 'desc');
-            phoneListenerUnsubscribe = q.onSnapshot(snapshot => {
-                if (snapshot.empty) {
-                    container.innerHTML = '<p class="text-gray-500 text-center">У вас поки що немає замовлень.</p>';
-                    return;
-                }
-                let html = '';
-                snapshot.forEach(doc => {
-                    const order = doc.data();
-                    const statusColors = {
-                        'нове': 'bg-red-100 text-red-700',
-                        'підтверджено': 'bg-blue-100 text-blue-700',
-                        'в дорозі': 'bg-orange-100 text-orange-700',
-                        'виконано': 'bg-green-100 text-green-700',
-                        'скасовано': 'bg-gray-200 text-gray-600'
-                    };
-                    const statusColor = statusColors[order.status] || 'bg-gray-100';
-                    const needCallbackHtml = order.customer.needCallback ? '<span class="ml-2 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs"><i class="fas fa-phone"></i> Потрібен дзвінок</span>' : '';
-                    html += `
-                    <div class="border rounded-xl p-4 bg-gray-50">
-                        <div class="flex flex-wrap justify-between items-start gap-2 border-b pb-2">
-                            <div><span class="font-bold">№ ${order.id.slice(-6)}</span><span class="text-sm text-gray-500 ml-2">${new Date(order.date).toLocaleString()}</span></div>
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded-full text-xs ${statusColor}">${order.status}</span>
-                                ${needCallbackHtml}
-                            </div>
-                        </div>
-                        <div class="mt-2"><i class="fas fa-map-marker-alt"></i> Адреса: ${escapeHtml(order.customer.address || 'не вказано')}</div>
-                        <div class="mt-2 text-sm"><span class="font-semibold">Товари:</span>
-                            <ul class="list-disc ml-5">${order.items.map(i => `<li>${i.name} - ${i.quantity} кг × ${i.price} = ${i.total} грн</li>`).join('')}</ul>
-                        </div>
-                        <div class="mt-2 flex justify-between items-center">
-                            <span class="font-bold text-green-700">Сума: ${order.total} грн</span>
-                            ${order.customer.comment ? `<span class="text-xs text-gray-500"><i class="fas fa-comment"></i> ${escapeHtml(order.customer.comment)}</span>` : ''}
-                        </div>
-                    </div>
-                `;
-                });
-                container.innerHTML = html;
-            }, error => {
-                console.error("Помилка завантаження замовлень:", error);
-                container.innerHTML = '<p class="text-red-500 text-center">Помилка завантаження. Спробуйте пізніше.</p>';
+        function updateDetailCarousel() {
+            const track = document.getElementById('detailCarouselTrack');
+            const dots = document.querySelectorAll('#detailDots .dot');
+            if (!track) return;
+            track.style.transform = `translateX(-${detailCurrentIndex * 100}%)`;
+            dots.forEach((dot, i) => {
+                if (i === detailCurrentIndex) dot.classList.add('active');
+                else dot.classList.remove('active');
             });
         }
 
-        // ---- Інші UI функції (без змін) ----
-        function createCarousel(images) {
+        function setupDetailEventListeners(product) {
+            let currentQty = STEP;
+            const qtySpan = document.getElementById('detailQtyValue');
+            const decrBtn = document.getElementById('detailDecr');
+            const incrBtn = document.getElementById('detailIncr');
+            const addBtn = document.getElementById('detailAddToCartBtn');
+            const prevBtn = document.getElementById('detailPrevBtn');
+            const nextBtn = document.getElementById('detailNextBtn');
+            const updateQtyDisplay = () => qtySpan.innerText = currentQty.toFixed(2);
+            decrBtn.onclick = () => {
+                let newVal = currentQty - STEP;
+                if (newVal >= STEP) currentQty = parseFloat(newVal.toFixed(2));
+                else currentQty = STEP;
+                updateQtyDisplay();
+            };
+            incrBtn.onclick = () => {
+                let newVal = currentQty + STEP;
+                if (newVal <= product.quantity) currentQty = parseFloat(newVal.toFixed(2));
+                else currentQty = product.quantity;
+                updateQtyDisplay();
+            };
+            addBtn.onclick = async () => {
+                await addToCartWithQuantity(product.id, currentQty);
+                closeDetailModal();
+            };
+            prevBtn.onclick = () => {
+                if (detailCurrentIndex > 0) detailCurrentIndex--;
+                else detailCurrentIndex = (product.images?.length || 1) - 1;
+                updateDetailCarousel();
+            };
+            nextBtn.onclick = () => {
+                if (detailCurrentIndex < (product.images?.length || 1) - 1) detailCurrentIndex++;
+                else detailCurrentIndex = 0;
+                updateDetailCarousel();
+            };
+        }
+
+        function closeDetailModal() {
+            document.getElementById('productDetailModal').classList.add('hidden');
+            currentDetailProduct = null;
+        }
+
+        // ---------- UI компоненти ----------
+        function createCarousel(images, productId) {
             if (!images.length) images = ['https://via.placeholder.com/400x200?text=Немає+фото'];
             const container = document.createElement('div');
             container.className = 'carousel-container';
@@ -578,7 +708,7 @@
                 const isLast = (prod.quantity === STEP && !isOut);
                 const card = document.createElement('div');
                 card.className = `bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 card-hover ${isOut ? 'out-of-stock' : ''}`;
-                const carousel = createCarousel(prod.images || []);
+                const carousel = createCarousel(prod.images || [], prod.id);
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'p-4';
                 infoDiv.innerHTML = `
@@ -607,6 +737,12 @@
             `;
                 card.appendChild(carousel);
                 card.appendChild(infoDiv);
+                // Клік по картці (окрім кнопок) відкриває детальний модал
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.add-to-cart-btn')) return;
+                    if (e.target.closest('.qty-btn')) return;
+                    openDetailModal(prod.id);
+                });
                 grid.appendChild(card);
                 if (!isOut) {
                     let currentQty = STEP;
@@ -615,19 +751,24 @@
                     const decrBtn = card.querySelector('.decr-home');
                     const incrBtn = card.querySelector('.incr-home');
                     const addBtn = card.querySelector('.add-to-cart-btn');
-                    decrBtn?.addEventListener('click', () => {
+                    decrBtn?.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         let newVal = currentQty - STEP;
                         if (newVal >= STEP) currentQty = parseFloat(newVal.toFixed(2));
                         else currentQty = STEP;
                         updateDisplay();
                     });
-                    incrBtn?.addEventListener('click', () => {
+                    incrBtn?.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         let newVal = currentQty + STEP;
                         if (newVal <= prod.quantity) currentQty = parseFloat(newVal.toFixed(2));
                         else currentQty = prod.quantity;
                         updateDisplay();
                     });
-                    addBtn?.addEventListener('click', () => addToCartWithQuantity(prod.id, currentQty));
+                    addBtn?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        addToCartWithQuantity(prod.id, currentQty);
+                    });
                 }
             });
         }
@@ -682,20 +823,62 @@
         function showToast(msg) { const t = document.createElement('div'); t.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-5 py-2 rounded-full z-50 text-sm shadow-lg'; t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
 
+        // Мої замовлення
+        let phoneListenerUnsubscribe = null;
+        async function fetchAndDisplayOrders(phone) {
+            if (!phone) { alert("Введіть номер телефону"); return; }
+            const container = document.getElementById('ordersListContainer');
+            container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Завантаження...</div>';
+            if (phoneListenerUnsubscribe) phoneListenerUnsubscribe();
+            const q = db.collection('orders').where('customer.phone', '==', phone);
+            phoneListenerUnsubscribe = q.onSnapshot(snapshot => {
+                if (snapshot.empty) { container.innerHTML = '<p class="text-gray-500 text-center">У вас поки що немає замовлень.</p>'; return; }
+                let ordersArray = [];
+                snapshot.forEach(doc => ordersArray.push({ id: doc.id, ...doc.data() }));
+                ordersArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+                let html = '';
+                ordersArray.forEach(order => {
+                    const statusColors = { 'нове': 'bg-red-100 text-red-700', 'підтверджено': 'bg-blue-100 text-blue-700', 'в дорозі': 'bg-orange-100 text-orange-700', 'виконано': 'bg-green-100 text-green-700', 'скасовано': 'bg-gray-200 text-gray-600' };
+                    const statusColor = statusColors[order.status] || 'bg-gray-100';
+                    const needCallbackHtml = order.customer.needCallback ? '<span class="ml-2 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs"><i class="fas fa-phone"></i> Потрібен дзвінок</span>' : '';
+                    html += `<div class="border rounded-xl p-4 bg-gray-50">
+                            <div class="flex flex-wrap justify-between items-start gap-2 border-b pb-2">
+                                <div><span class="font-bold">№ ${order.id.slice(-6)}</span><span class="text-sm text-gray-500 ml-2">${new Date(order.date).toLocaleString()}</span></div>
+                                <div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded-full text-xs ${statusColor}">${order.status}</span>${needCallbackHtml}</div>
+                            </div>
+                            <div class="mt-2"><i class="fas fa-map-marker-alt"></i> Адреса: ${escapeHtml(order.customer.address || 'не вказано')}</div>
+                            <div class="mt-2 text-sm"><span class="font-semibold">Товари:</span><ul class="list-disc ml-5">${order.items.map(i => `<li>${i.name} - ${i.quantity} кг × ${i.price} = ${i.total} грн</li>`).join('')}</ul></div>
+                            <div class="mt-2 flex justify-between items-center"><span class="font-bold text-green-700">Сума: ${order.total} грн</span>${order.customer.comment ? `<span class="text-xs text-gray-500"><i class="fas fa-comment"></i> ${escapeHtml(order.customer.comment)}</span>` : ''}</div>
+                        </div>`;
+                });
+                container.innerHTML = html;
+            });
+        }
+
         // Події
         document.getElementById('openCartBtn').addEventListener('click', openCartModal);
         document.getElementById('closeCartBtn').addEventListener('click', closeCartModal);
         document.getElementById('checkoutBtn').addEventListener('click', openOrderForm);
         document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
         document.getElementById('cancelOrderBtn').addEventListener('click', closeOrderFormModal);
-        document.getElementById('userOrdersBtn').addEventListener('click', openUserOrdersModal);
-        document.getElementById('closeUserOrdersBtn').addEventListener('click', closeUserOrdersModal);
+        document.getElementById('userOrdersBtn').addEventListener('click', () => {
+            const savedPhone = localStorage.getItem('last_user_phone');
+            if (savedPhone) document.getElementById('userPhoneInput').value = savedPhone;
+            document.getElementById('userOrdersModal').classList.remove('hidden');
+        });
+        document.getElementById('closeUserOrdersBtn').addEventListener('click', () => document.getElementById('userOrdersModal').classList.add('hidden'));
         document.getElementById('loadUserOrdersBtn').addEventListener('click', () => {
             const phone = document.getElementById('userPhoneInput').value.trim();
             if (phone) fetchAndDisplayOrders(phone);
             else alert("Введіть номер телефону");
         });
-        window.onclick = e => { if (e.target === document.getElementById('cartModal')) closeCartModal(); if (e.target === document.getElementById('orderFormModal')) closeOrderFormModal(); if (e.target === document.getElementById('userOrdersModal')) closeUserOrdersModal(); };
+        document.getElementById('closeDetailModalBtn').addEventListener('click', closeDetailModal);
+        window.onclick = e => {
+            if (e.target === document.getElementById('cartModal')) closeCartModal();
+            if (e.target === document.getElementById('orderFormModal')) closeOrderFormModal();
+            if (e.target === document.getElementById('userOrdersModal')) document.getElementById('userOrdersModal').classList.add('hidden');
+            if (e.target === document.getElementById('productDetailModal')) closeDetailModal();
+        };
 
         subscribeToProducts();
         loadCart();

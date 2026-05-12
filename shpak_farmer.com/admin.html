@@ -22,19 +22,41 @@
             border-radius: 8px;
         }
 
-        .multi-image-preview {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 8px;
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 1rem;
+            background: #f8fafc;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #4c9f70;
+            background: #f0fdf4;
         }
 
         .preview-img {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             object-fit: cover;
             border-radius: 8px;
             border: 1px solid #ddd;
+        }
+
+        .edit-preview-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .status-select {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 20px;
+            background: white;
+            border: 1px solid #ccc;
         }
 
         .toast-notify {
@@ -70,14 +92,6 @@
                 display: none;
             }
         }
-
-        .status-select {
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            border-radius: 20px;
-            background: white;
-            border: 1px solid #ccc;
-        }
     </style>
     <link rel="shortcut icon" href="favicon/" type="image/x-icon">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
@@ -90,6 +104,8 @@
 
     <!-- Опціонально: маніфест для PWA (дозволяє встановити сайт на телефон) -->
     <link rel="manifest" href="favicon/site.webmanifest">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 
 <body class="bg-gray-50">
@@ -115,12 +131,14 @@
                 <button id="tabOrders" class="py-2 px-4 font-semibold text-gray-500 relative">
                     📋 Замовлення
                     <span id="newOrdersBadge"
-                        class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                        class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 shadow-md">0</span>
                 </button>
+                <button id="tabAnalytics" class="py-2 px-4 font-semibold text-gray-500">📊 Аналітика</button>
             </div>
 
             <div id="productsSection">
                 <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Форма додавання товару -->
                     <div class="bg-white p-5 rounded-xl shadow">
                         <h3 class="font-bold text-lg mb-3">➕ Новий товар</h3>
                         <input type="text" id="prodName" placeholder="Назва" class="w-full border p-2 rounded mb-2">
@@ -132,16 +150,29 @@
                             <option value="овочі">Овочі</option>
                             <option value="ягоди">Ягоди</option>
                         </select>
-                        <div class="mb-2">
-                            <label class="block text-sm font-medium">Фото (кілька URL або файлів)</label>
+                        <textarea id="prodDescription" rows="3" placeholder="Опис товару (до 500 символів)"
+                            class="w-full border p-2 rounded mb-2"></textarea>
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Зображення товару (перетягніть або
+                                натисніть)</label>
+                            <div id="dropZone" class="drop-zone p-4 text-center cursor-pointer"
+                                onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                                <p class="text-sm text-gray-500">Перетягніть сюди фото або натисніть, щоб вибрати</p>
+                                <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+                            </div>
+                            <div id="imagePreviews" class="flex flex-wrap gap-2 mt-2"></div>
                             <textarea id="prodImagesUrls" rows="2"
-                                placeholder="URL фото (кожен з нового рядка)"></textarea>
-                            <input type="file" id="prodImagesFiles" multiple accept="image/*" class="mt-2">
-                            <div id="imagePreviews" class="multi-image-preview"></div>
+                                placeholder="Або введіть URL фото (кожен з нового рядка)"
+                                class="w-full border p-2 rounded mt-2"></textarea>
                         </div>
+
                         <button id="addProductBtn" class="bg-green-600 text-white w-full py-2 rounded-lg">➕
                             Додати</button>
                     </div>
+
+                    <!-- Список товарів -->
                     <div class="bg-white p-5 rounded-xl shadow">
                         <h3 class="font-bold text-lg mb-3">📋 Редагувати товари</h3>
                         <div id="adminProductList" class="max-h-[500px] overflow-y-auto space-y-3"></div>
@@ -153,11 +184,90 @@
                 <h3 class="font-bold text-lg mb-3">Замовлення</h3>
                 <div id="ordersList" class="space-y-4 max-h-[600px] overflow-y-auto"></div>
             </div>
+            <div id="analyticsSection" class="hidden bg-white p-5 rounded-xl shadow">
+                <h3 class="font-bold text-lg mb-3">📊 Статистика продажів</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-green-50 p-4 rounded-xl text-center">
+                        <p class="text-gray-500">Всього замовлень</p>
+                        <p id="totalOrders" class="text-3xl font-bold text-green-700">0</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-xl text-center">
+                        <p class="text-gray-500">Загальна виручка</p>
+                        <p id="totalRevenue" class="text-3xl font-bold text-blue-700">0 грн</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-xl text-center">
+                        <p class="text-gray-500">Середній чек</p>
+                        <p id="avgOrderValue" class="text-3xl font-bold text-purple-700">0 грн</p>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h4 class="font-semibold text-lg mb-2">🏆 Найпопулярніші товари</h4>
+                    <div id="topProducts" class="space-y-2"></div>
+                </div>
+                <button id="exportCsvBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg mb-4"><i
+                        class="fas fa-download"></i>
+                    Експорт замовлень (CSV)</button>
+                <div>
+                    <h4 class="font-semibold text-lg mb-2">📅 Динаміка замовлень (останні 7 днів)</h4>
+                    <canvas id="ordersChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модал редагування зображень -->
+    <div id="editImagesModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full mx-4 max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center p-5 border-b">
+                <h3 class="text-xl font-bold"><i class="fas fa-images text-green-600 mr-2"></i>Редагування зображень
+                </h3>
+                <button id="closeEditModalBtn" class="text-gray-500 hover:text-black text-2xl">&times;</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5">
+                <div id="editDropZone" class="drop-zone p-4 text-center cursor-pointer mb-4"
+                    onclick="document.getElementById('editFileInput').click()">
+                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                    <p class="text-sm text-gray-500">Перетягніть нові фото або натисніть, щоб додати</p>
+                    <input type="file" id="editFileInput" multiple accept="image/*" class="hidden">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Або введіть URL (кожен з нового рядка)</label>
+                    <textarea id="editImagesUrls" rows="2"
+                        placeholder="https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg"
+                        class="w-full border p-2 rounded"></textarea>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium mb-2">Поточні зображення (натисніть на хрестик, щоб
+                        видалити)</label>
+                    <div id="editImagesPreview" class="flex flex-wrap gap-3"></div>
+                </div>
+            </div>
+            <div class="p-4 border-t bg-gray-50 flex justify-end gap-3">
+                <button id="cancelEditBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">Скасувати</button>
+                <button id="saveEditImagesBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg">Зберегти
+                    зміни</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модал редагування опису -->
+    <div id="editDescriptionModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full mx-4 p-6 shadow-2xl">
+            <h3 class="text-xl font-bold mb-4">✏️ Редагувати опис товару</h3>
+            <textarea id="editDescriptionText" rows="4" class="w-full border p-2 rounded"
+                placeholder="Опис..."></textarea>
+            <div class="flex gap-3 mt-4">
+                <button id="saveDescriptionBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg">Зберегти</button>
+                <button id="cancelDescriptionBtn"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">Скасувати</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // -------------------- FIREBASE КОНФІГ (вставте свій) --------------------
+        // ---------- КОНФІГ FIREBASE ----------
         const firebaseConfig = {
             apiKey: "AIzaSyDfnd8GywyOO6g4DHroSayWggN8QcJ47iA",
             authDomain: "shpak-farmer.firebaseapp.com",
@@ -172,62 +282,11 @@
         let products = [];
         let orders = [];
         let unviewedCount = 0;
+        let currentEditingProductId = null;
+        let currentEditingImages = [];
+        let pendingNewImages = [];
 
-        // Підписка на товари
-        function subscribeToProducts() {
-            db.collection('products').onSnapshot(snapshot => {
-                products = [];
-                snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
-                renderAdminProducts();
-            });
-        }
-
-        // Підписка на замовлення + оновлення лічильника нових
-        function subscribeToOrders() {
-            db.collection('orders').orderBy('date', 'desc').onSnapshot(snapshot => {
-                orders = [];
-                snapshot.forEach(doc => orders.push({ id: doc.id, ...doc.data() }));
-                renderOrdersList();
-                updateUnviewedCount();
-                // Сповіщення про нові (якщо viewed === false)
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added' && !change.doc.data().viewed) {
-                        showNotification(`🛒 Нове замовлення від ${change.doc.data().customer.name}`);
-                        playSound();
-                    }
-                });
-            });
-        }
-
-        async function updateUnviewedCount() {
-            const snapshot = await db.collection('orders').where('viewed', '==', false).get();
-            unviewedCount = snapshot.size;
-            const badge = document.getElementById('newOrdersBadge');
-            if (unviewedCount > 0) {
-                badge.innerText = unviewedCount;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
-        // Позначити всі замовлення як переглянуті (при переході на вкладку)
-        async function markAllOrdersAsViewed() {
-            const snapshot = await db.collection('orders').where('viewed', '==', false).get();
-            const batch = db.batch();
-            snapshot.forEach(doc => {
-                batch.update(doc.ref, { viewed: true });
-            });
-            await batch.commit();
-            updateUnviewedCount();
-        }
-
-        // ОНОВЛЕННЯ СТАТУСУ (нова функція)
-        async function updateOrderStatus(orderId, newStatus) {
-            await db.collection('orders').doc(orderId).update({ status: newStatus });
-        }
-
-        // Сповіщення (звук + toast)
+        // ---------- Сповіщення ----------
         function showNotification(message) {
             const toast = document.createElement('div');
             toast.className = 'toast-notify';
@@ -235,6 +294,7 @@
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
         }
+
         function playSound() {
             try {
                 const context = new (window.AudioContext || window.webkitAudioContext)();
@@ -250,10 +310,88 @@
             } catch (e) { console.log("Звук не підтримується"); }
         }
 
+        // ---------- Підписки ----------
+        function subscribeToProducts() {
+            db.collection('products').onSnapshot(snapshot => {
+                products = [];
+                snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
+                renderAdminProducts();
+            });
+        }
+
+        function subscribeToOrders() {
+            db.collection('orders').orderBy('date', 'desc').onSnapshot(snapshot => {
+                orders = [];
+                snapshot.forEach(doc => orders.push({ id: doc.id, ...doc.data() }));
+                renderOrdersList();
+                updateUnviewedCount();
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added' && !change.doc.data().viewed) {
+                        const orderData = change.doc.data();
+                        showNotification(`🛒 Нове замовлення від ${orderData.customer.name}`);
+                        playSound();
+                    }
+                });
+            });
+        }
+
+        async function updateUnviewedCount() {
+            const snapshot = await db.collection('orders').where('viewed', '==', false).get();
+            unviewedCount = snapshot.size;
+            const badge = document.getElementById('newOrdersBadge');
+            if (unviewedCount > 0) {
+                let displayCount = unviewedCount > 99 ? '99+' : unviewedCount;
+                badge.innerText = displayCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        async function markAllOrdersAsViewed() {
+            const snapshot = await db.collection('orders').where('viewed', '==', false).get();
+            const batch = db.batch();
+            snapshot.forEach(doc => batch.update(doc.ref, { viewed: true }));
+            await batch.commit();
+            updateUnviewedCount();
+        }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            await db.collection('orders').doc(orderId).update({ status: newStatus });
+        }
+
         // ---------- Робота з товарами ----------
+        async function addProduct() {
+            const name = document.getElementById('prodName').value.trim();
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const quantity = parseFloat(document.getElementById('prodQuantity').value);
+            const category = document.getElementById('prodCategory').value;
+            const description = document.getElementById('prodDescription').value.trim();
+            if (!name || isNaN(price) || isNaN(quantity) || price <= 0 || quantity < 0) {
+                alert("Заповніть правильно");
+                return;
+            }
+            const images = collectImages();
+            const newProduct = {
+                name, price, quantity, category, description: description || '',
+                blocked: quantity === 0,
+                images: images,
+                createdAt: new Date().toISOString()
+            };
+            await db.collection('products').add(newProduct);
+            clearImageForm();
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodPrice').value = '';
+            document.getElementById('prodQuantity').value = '';
+            document.getElementById('prodCategory').value = 'овочі';
+            document.getElementById('prodDescription').value = '';
+            alert("Товар додано");
+        }
+
         async function updateProductPrice(productId, newPrice) {
             await db.collection('products').doc(productId).update({ price: newPrice });
         }
+
         async function updateProductQuantity(productId, newQuantity) {
             await db.collection('products').doc(productId).update({ quantity: newQuantity });
             if (newQuantity === 0) await db.collection('products').doc(productId).update({ blocked: true });
@@ -262,58 +400,198 @@
                 if (doc.data().blocked && newQuantity > 0) await db.collection('products').doc(productId).update({ blocked: false });
             }
         }
+
+        async function updateProductDescription(productId, newDescription) {
+            await db.collection('products').doc(productId).update({ description: newDescription });
+        }
+
         async function toggleBlock(productId, currentBlocked) {
             await db.collection('products').doc(productId).update({ blocked: !currentBlocked });
         }
+
         async function deleteProduct(productId) {
             if (confirm("Видалити товар?")) {
                 await db.collection('products').doc(productId).delete();
             }
         }
-        async function editImages(productId, currentImages) {
-            let newUrls = prompt('Введіть URL фото (через кому або новий рядок):', (currentImages || []).join('\n'));
-            if (newUrls !== null) {
-                let urls = newUrls.split(/[ ,\n]+/).filter(u => u.trim());
-                if (urls.length === 0) urls = ['https://via.placeholder.com/400x200?text=Без+фото'];
-                await db.collection('products').doc(productId).update({ images: urls });
+
+        // ---------- Drag & Drop для додавання товару ----------
+        function initDragDrop() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            if (!dropZone) return;
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+                dropZone.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); });
+            });
+            ['dragenter', 'dragover'].forEach(ev => {
+                dropZone.addEventListener(ev, () => dropZone.classList.add('drag-over'));
+            });
+            ['dragleave', 'drop'].forEach(ev => {
+                dropZone.addEventListener(ev, () => dropZone.classList.remove('drag-over'));
+            });
+            dropZone.addEventListener('drop', (e) => { handleFiles(e.dataTransfer.files); });
+            fileInput.addEventListener('change', (e) => { handleFiles(e.target.files); });
+
+            function handleFiles(files) {
+                if (!files.length) return;
+                for (let file of files) {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            addImagePreview(ev.target.result);
+                            window.pendingImages = window.pendingImages || [];
+                            window.pendingImages.push(ev.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    } else alert(`Файл ${file.name} не є зображенням`);
+                }
             }
-        }
-        async function addProduct() {
-            const name = document.getElementById('prodName').value.trim();
-            const price = parseFloat(document.getElementById('prodPrice').value);
-            const quantity = parseFloat(document.getElementById('prodQuantity').value);
-            const category = document.getElementById('prodCategory').value;
-            if (!name || isNaN(price) || isNaN(quantity) || price <= 0 || quantity < 0) { alert("Заповніть правильно"); return; }
-            let images = [];
-            const urlsText = document.getElementById('prodImagesUrls').value;
-            if (urlsText.trim()) images = urlsText.split(/\r?\n/).filter(u => u.trim());
-            const files = document.getElementById('prodImagesFiles').files;
-            const fileReaders = [];
-            for (let file of files) {
-                const reader = new FileReader();
-                const promise = new Promise((resolve) => { reader.onload = e => resolve(e.target.result); });
-                reader.readAsDataURL(file);
-                fileReaders.push(promise);
-            }
-            const base64Images = await Promise.all(fileReaders);
-            images.push(...base64Images);
-            if (images.length === 0) images = ['https://via.placeholder.com/400x200?text=Без+фото'];
-            const newProduct = {
-                name, price, quantity, category,
-                blocked: quantity === 0,
-                images: images,
-                createdAt: new Date().toISOString()
-            };
-            await db.collection('products').add(newProduct);
-            document.getElementById('prodName').value = '';
-            document.getElementById('prodPrice').value = '';
-            document.getElementById('prodQuantity').value = '';
-            document.getElementById('prodImagesUrls').value = '';
-            document.getElementById('prodImagesFiles').value = '';
-            document.getElementById('imagePreviews').innerHTML = '';
-            alert("Товар додано");
         }
 
+        function addImagePreview(src) {
+            const container = document.getElementById('imagePreviews');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'relative inline-block';
+            const img = document.createElement('img');
+            img.src = src;
+            img.className = 'preview-img';
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
+            removeBtn.className = 'absolute -top-2 -right-2 bg-white rounded-full';
+            removeBtn.onclick = () => {
+                wrapper.remove();
+                const idx = (window.pendingImages || []).indexOf(src);
+                if (idx !== -1) window.pendingImages.splice(idx, 1);
+            };
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+            container.appendChild(wrapper);
+        }
+
+        function collectImages() {
+            let images = [];
+            const urlsText = document.getElementById('prodImagesUrls').value;
+            if (urlsText.trim()) images.push(...urlsText.split(/\r?\n/).filter(u => u.trim()));
+            if (window.pendingImages && window.pendingImages.length) images.push(...window.pendingImages);
+            if (images.length === 0) images = ['https://via.placeholder.com/400x200?text=Без+фото'];
+            return images;
+        }
+
+        function clearImageForm() {
+            document.getElementById('imagePreviews').innerHTML = '';
+            document.getElementById('prodImagesUrls').value = '';
+            window.pendingImages = [];
+        }
+
+        // ---------- Редагування зображень ----------
+        function openEditImagesModal(productId, currentImages) {
+            currentEditingProductId = productId;
+            currentEditingImages = [...currentImages];
+            pendingNewImages = [];
+            document.getElementById('editImagesUrls').value = '';
+            renderEditPreview();
+            document.getElementById('editImagesModal').classList.remove('hidden');
+            initEditDragDrop();
+        }
+
+        function renderEditPreview() {
+            const container = document.getElementById('editImagesPreview');
+            container.innerHTML = '';
+            [...currentEditingImages, ...pendingNewImages].forEach((src, idx) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'relative inline-block group';
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'edit-preview-img';
+                const removeBtn = document.createElement('button');
+                removeBtn.innerHTML = '<i class="fas fa-times-circle text-red-600 text-xl"></i>';
+                removeBtn.className = 'absolute -top-2 -right-2 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition';
+                removeBtn.onclick = () => {
+                    if (idx < currentEditingImages.length) currentEditingImages.splice(idx, 1);
+                    else pendingNewImages.splice(idx - currentEditingImages.length, 1);
+                    renderEditPreview();
+                };
+                wrapper.appendChild(img);
+                wrapper.appendChild(removeBtn);
+                container.appendChild(wrapper);
+            });
+            if (currentEditingImages.length === 0 && pendingNewImages.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-sm">Немає зображень. Додайте нові.</p>';
+            }
+        }
+
+        function initEditDragDrop() {
+            const dropZone = document.getElementById('editDropZone');
+            const fileInput = document.getElementById('editFileInput');
+            if (!dropZone) return;
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+                dropZone.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); });
+            });
+            ['dragenter', 'dragover'].forEach(ev => {
+                dropZone.addEventListener(ev, () => dropZone.classList.add('drag-over'));
+            });
+            ['dragleave', 'drop'].forEach(ev => {
+                dropZone.addEventListener(ev, () => dropZone.classList.remove('drag-over'));
+            });
+            dropZone.addEventListener('drop', (e) => { handleEditFiles(e.dataTransfer.files); });
+            fileInput.addEventListener('change', (e) => { handleEditFiles(e.target.files); });
+
+            function handleEditFiles(files) {
+                if (!files.length) return;
+                for (let file of files) {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            pendingNewImages.push(ev.target.result);
+                            renderEditPreview();
+                        };
+                        reader.readAsDataURL(file);
+                    } else alert(`Файл ${file.name} не є зображенням`);
+                }
+            }
+        }
+
+        async function saveProductImages() {
+            if (!currentEditingProductId) return;
+            const urlsText = document.getElementById('editImagesUrls').value;
+            if (urlsText.trim()) {
+                const urls = urlsText.split(/\r?\n/).filter(u => u.trim());
+                pendingNewImages.push(...urls);
+            }
+            const allImages = [...currentEditingImages, ...pendingNewImages];
+            if (allImages.length === 0) allImages.push('https://via.placeholder.com/400x200?text=Без+фото');
+            await db.collection('products').doc(currentEditingProductId).update({ images: allImages });
+            closeEditModal();
+        }
+
+        function closeEditModal() {
+            document.getElementById('editImagesModal').classList.add('hidden');
+            currentEditingProductId = null;
+            currentEditingImages = [];
+            pendingNewImages = [];
+        }
+
+        // ---------- Редагування опису ----------
+        function openEditDescriptionModal(productId, currentDescription) {
+            currentEditingProductId = productId;
+            document.getElementById('editDescriptionText').value = currentDescription || '';
+            document.getElementById('editDescriptionModal').classList.remove('hidden');
+        }
+
+        async function saveDescription() {
+            const newDesc = document.getElementById('editDescriptionText').value.trim();
+            await updateProductDescription(currentEditingProductId, newDesc);
+            closeDescriptionModal();
+        }
+
+        function closeDescriptionModal() {
+            document.getElementById('editDescriptionModal').classList.add('hidden');
+            currentEditingProductId = null;
+        }
+
+        // ---------- Рендер товарів (з кнопкою редагування опису) ----------
         function renderAdminProducts() {
             const container = document.getElementById('adminProductList');
             if (!container) return;
@@ -331,12 +609,14 @@
                             <input type="number" step="0.5" value="${prod.quantity}" class="w-24 border rounded p-1 text-sm qty-input" data-id="${prod.id}">
                             <span>кг</span>
                         </div>
+                        <div class="text-xs text-gray-500 mt-1 line-clamp-2">${escapeHtml(prod.description || 'Без опису')}</div>
                         <div class="flex gap-1 mt-2 flex-wrap">
                             ${(prod.images || []).slice(0, 3).map(img => `<img src="${img}" class="image-thumb" onerror="this.src='https://via.placeholder.com/60'">`).join('')}
                             ${prod.images?.length > 3 ? `<span class="text-xs text-gray-500">+${prod.images.length - 3}</span>` : ''}
                         </div>
                     </div>
                     <div class="flex flex-col gap-2">
+                        <button class="edit-description bg-purple-100 px-3 py-1 rounded text-sm" data-id="${prod.id}"><i class="fas fa-pen"></i> Опис</button>
                         <button class="toggle-block px-3 py-1 rounded-full text-sm ${prod.blocked ? 'bg-green-200' : 'bg-red-200'}" data-id="${prod.id}">${prod.blocked ? 'Розблокувати' : 'Заблокувати'}</button>
                         <button class="edit-images bg-blue-100 px-3 py-1 rounded text-sm" data-id="${prod.id}"><i class="fas fa-images"></i> Фото</button>
                         <button class="delete-product bg-red-100 px-3 py-1 rounded text-sm" data-id="${prod.id}">Видалити</button>
@@ -347,12 +627,13 @@
                 div.querySelector('.price-input').addEventListener('change', (e) => updateProductPrice(prod.id, parseFloat(e.target.value)));
                 div.querySelector('.qty-input').addEventListener('change', (e) => updateProductQuantity(prod.id, parseFloat(e.target.value)));
                 div.querySelector('.toggle-block').addEventListener('click', () => toggleBlock(prod.id, prod.blocked));
-                div.querySelector('.edit-images').addEventListener('click', () => editImages(prod.id, prod.images));
+                div.querySelector('.edit-images').addEventListener('click', () => openEditImagesModal(prod.id, prod.images || []));
+                div.querySelector('.edit-description').addEventListener('click', () => openEditDescriptionModal(prod.id, prod.description));
                 div.querySelector('.delete-product').addEventListener('click', () => deleteProduct(prod.id));
             });
         }
 
-        // ---------- Відображення замовлень із можливістю зміни статусу ----------
+        // ---------- Рендер замовлень ----------
         function renderOrdersList() {
             const container = document.getElementById('ordersList');
             if (!container) return;
@@ -364,7 +645,6 @@
             orders.forEach(order => {
                 const div = document.createElement('div');
                 div.className = 'border rounded-xl p-4 bg-white hover:shadow-md transition';
-                // Кольори статусів
                 const statusColors = {
                     'нове': 'bg-red-100 text-red-700',
                     'підтверджено': 'bg-blue-100 text-blue-700',
@@ -399,52 +679,59 @@
                 </div>
             `;
                 container.appendChild(div);
-                // Обробка зміни статусу
                 const statusSelect = div.querySelector('.status-select');
                 statusSelect.addEventListener('change', async (e) => {
-                    const newStatus = e.target.value;
-                    await updateOrderStatus(order.id, newStatus);
-                    // Можна додати локальне оновлення без перезавантаження, але воно і так прийде через onSnapshot
+                    await updateOrderStatus(order.id, e.target.value);
                 });
-                // При кліку на саме замовлення позначити як переглянуте (крім кліку на select)
                 div.addEventListener('click', async (e) => {
                     if (e.target.tagName === 'SELECT') return;
                     if (!order.viewed) {
                         await db.collection('orders').doc(order.id).update({ viewed: true });
-                        // Приховати бейдж "Нове"
-                        const badge = div.querySelector('.text-xs.bg-red-100');
-                        if (badge) badge.remove();
+                        const badgeSpan = div.querySelector('.text-xs.bg-red-100');
+                        if (badgeSpan) badgeSpan.remove();
+                        updateUnviewedCount();
                     }
                 });
             });
         }
 
-        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
 
-        // Вкладки
+        // ---------- Вкладки ----------
         const productsSection = document.getElementById('productsSection');
         const ordersSection = document.getElementById('ordersSection');
         const tabProducts = document.getElementById('tabProducts');
         const tabOrders = document.getElementById('tabOrders');
+
         tabProducts.addEventListener('click', () => {
             productsSection.classList.remove('hidden');
             ordersSection.classList.add('hidden');
+            analyticsSection.classList.add('hidden');
             tabProducts.classList.add('border-b-2', 'border-green-600', 'text-green-700');
             tabProducts.classList.remove('text-gray-500');
             tabOrders.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
             tabOrders.classList.add('text-gray-500');
+            tabAnalytics.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
+            tabAnalytics.classList.add('text-gray-500');
         });
+
         tabOrders.addEventListener('click', async () => {
             ordersSection.classList.remove('hidden');
             productsSection.classList.add('hidden');
+            analyticsSection.classList.add('hidden');
             tabOrders.classList.add('border-b-2', 'border-green-600', 'text-green-700');
             tabOrders.classList.remove('text-gray-500');
             tabProducts.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
             tabProducts.classList.add('text-gray-500');
-            // При переході на вкладку замовлень - позначаємо всі як переглянуті
+            tabAnalytics.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
+            tabAnalytics.classList.add('text-gray-500');
             await markAllOrdersAsViewed();
         });
 
+        // ---------- Запуск ----------
         document.getElementById('addProductBtn').addEventListener('click', addProduct);
         document.getElementById('loginBtn').addEventListener('click', () => {
             const pwd = document.getElementById('adminPassword').value;
@@ -453,21 +740,112 @@
                 document.getElementById('adminContent').classList.remove('hidden');
                 subscribeToProducts();
                 subscribeToOrders();
+                initDragDrop();
+                window.pendingImages = [];
             } else alert('Невірний пароль');
         });
-        document.getElementById('prodImagesFiles').addEventListener('change', function (e) {
-            const previewDiv = document.getElementById('imagePreviews');
-            previewDiv.innerHTML = '';
-            Array.from(e.target.files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    const img = document.createElement('img');
-                    img.src = ev.target.result;
-                    img.className = 'preview-img';
-                    previewDiv.appendChild(img);
-                };
-                reader.readAsDataURL(file);
+
+        document.getElementById('closeEditModalBtn').addEventListener('click', closeEditModal);
+        document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
+        document.getElementById('saveEditImagesBtn').addEventListener('click', saveProductImages);
+        document.getElementById('saveDescriptionBtn').addEventListener('click', saveDescription);
+        document.getElementById('cancelDescriptionBtn').addEventListener('click', closeDescriptionModal);
+        window.onclick = (e) => {
+            if (e.target === document.getElementById('editImagesModal')) closeEditModal();
+            if (e.target === document.getElementById('editDescriptionModal')) closeDescriptionModal();
+        };
+        // ---------- АНАЛІТИКА ----------
+
+        let allOrders = [];
+        let ordersChartInstance = null;
+
+        async function loadAnalytics() {
+            const snapshot = await db.collection('orders').get();
+            allOrders = [];
+            snapshot.forEach(doc => allOrders.push({ id: doc.id, ...doc.data() }));
+            updateAnalyticsUI();
+        }
+
+        function updateAnalyticsUI() {
+            const total = allOrders.length;
+            const revenue = allOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+            const avg = total ? revenue / total : 0;
+            document.getElementById('totalOrders').innerText = total;
+            document.getElementById('totalRevenue').innerText = revenue.toFixed(0) + ' грн';
+            document.getElementById('avgOrderValue').innerText = avg.toFixed(0) + ' грн';
+
+            const productCount = {};
+            allOrders.forEach(order => {
+                order.items.forEach(item => {
+                    productCount[item.name] = (productCount[item.name] || 0) + item.quantity;
+                });
             });
+            const sorted = Object.entries(productCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const topDiv = document.getElementById('topProducts');
+            topDiv.innerHTML = sorted.map(([name, qty]) => `<div class="flex justify-between border-b py-1"><span>${escapeHtml(name)}</span><span class="font-bold">${qty.toFixed(2)} кг</span></div>`).join('') || '<div>Немає даних</div>';
+
+            drawChart();
+        }
+
+        function drawChart() {
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                let d = new Date();
+                d.setDate(d.getDate() - i);
+                days.push(d.toISOString().slice(0, 10));
+            }
+            const counts = days.map(day => allOrders.filter(o => o.date.slice(0, 10) === day).length);
+            const ctx = document.getElementById('ordersChart').getContext('2d');
+            if (ordersChartInstance) ordersChartInstance.destroy();
+            ordersChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels: days, datasets: [{ label: 'Замовлень', data: counts, borderColor: '#4c9f70', tension: 0.3 }] },
+                options: { responsive: true }
+            });
+        }
+
+        document.getElementById('exportCsvBtn').addEventListener('click', () => {
+            const headers = ["ID", "Дата", "Клієнт", "Телефон", "Сума", "Статус", "Товари"];
+            const rows = allOrders.map(o => {
+                const itemsStr = o.items.map(i => `${i.name} (${i.quantity}кг)`).join('; ');
+                return [
+                    `="${o.id}"`,   // ← ключове виправлення: ID як текстова формула
+                    new Date(o.date).toLocaleString(),
+                    o.customer.name,
+                    o.customer.phone,
+                    o.total,
+                    o.status,
+                    itemsStr
+                ];
+            });
+            // Формуємо CSV з роздільником ; та BOM для UTF-8
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+                .join('\n');
+            const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute("download", `orders_${new Date().toISOString().slice(0, 19)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+
+        // Оновлюємо вкладки
+        const analyticsSection = document.getElementById('analyticsSection');
+        tabAnalytics.addEventListener('click', async () => {
+            analyticsSection.classList.remove('hidden');
+            productsSection.classList.add('hidden');
+            ordersSection.classList.add('hidden');
+            tabAnalytics.classList.add('border-b-2', 'border-green-600', 'text-green-700');
+            tabAnalytics.classList.remove('text-gray-500');
+            tabProducts.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
+            tabProducts.classList.add('text-gray-500');
+            tabOrders.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
+            tabOrders.classList.add('text-gray-500');
+            await loadAnalytics();
         });
     </script>
 </body>
