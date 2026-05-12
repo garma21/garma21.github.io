@@ -265,7 +265,22 @@
             </div>
         </div>
     </div>
-
+    <!-- Модал підтвердження видалення замовлення -->
+    <div id="deleteOrderModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-red-600"><i class="fas fa-trash-alt mr-2"></i>Видалення замовлення
+                </h3>
+                <button id="closeDeleteModalBtn" class="text-gray-500 hover:text-black text-2xl">&times;</button>
+            </div>
+            <p class="text-gray-700 mb-6">Ви дійсно хочете видалити це замовлення? Цю дію не можна скасувати.</p>
+            <div class="flex justify-end gap-3">
+                <button id="cancelDeleteBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">Скасувати</button>
+                <button id="confirmDeleteBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg">Видалити</button>
+            </div>
+        </div>
+    </div>
     <script>
         // ---------- КОНФІГ FIREBASE ----------
         const firebaseConfig = {
@@ -359,7 +374,16 @@
         async function updateOrderStatus(orderId, newStatus) {
             await db.collection('orders').doc(orderId).update({ status: newStatus });
         }
-
+        async function deleteOrder(orderId) {
+            try {
+                await db.collection('orders').doc(orderId).delete();
+                showNotification(`✅ Замовлення ${orderId.slice(-6)} видалено`);
+                // Оновлення відбудеться автоматично через onSnapshot
+            } catch (error) {
+                console.error("Помилка видалення:", error);
+                alert("Не вдалося видалити замовлення. Перевірте консоль.");
+            }
+        }
         // ---------- Робота з товарами ----------
         async function addProduct() {
             const name = document.getElementById('prodName').value.trim();
@@ -655,36 +679,49 @@
                 const statusColor = statusColors[order.status] || 'bg-gray-100';
                 const needCallbackHtml = order.customer.needCallback ? '<span class="ml-2 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs"><i class="fas fa-phone mr-1"></i>Потрібен дзвінок</span>' : '';
                 div.innerHTML = `
-                <div class="flex flex-wrap justify-between items-start gap-2 border-b pb-2">
-                    <div><span class="font-bold">№ ${order.id.slice(-6)}</span><span class="text-sm text-gray-500 ml-2">${new Date(order.date).toLocaleString()}</span></div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="px-2 py-0.5 rounded-full text-xs ${statusColor}">${order.status}</span>
-                        <select class="status-select border rounded px-1 py-0.5 text-xs" data-id="${order.id}">
-                            <option value="нове" ${order.status === 'нове' ? 'selected' : ''}>нове</option>
-                            <option value="підтверджено" ${order.status === 'підтверджено' ? 'selected' : ''}>підтверджено</option>
-                            <option value="в дорозі" ${order.status === 'в дорозі' ? 'selected' : ''}>в дорозі</option>
-                            <option value="виконано" ${order.status === 'виконано' ? 'selected' : ''}>виконано</option>
-                            <option value="скасовано" ${order.status === 'скасовано' ? 'selected' : ''}>скасовано</option>
-                        </select>
-                        ${needCallbackHtml}
-                    </div>
+            <div class="flex flex-wrap justify-between items-start gap-2 border-b pb-2">
+                <div><span class="font-bold">№ ${order.id.slice(-6)}</span><span class="text-sm text-gray-500 ml-2">${new Date(order.date).toLocaleString()}</span></div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-full text-xs ${statusColor}">${order.status}</span>
+                    <select class="status-select border rounded px-1 py-0.5 text-xs" data-id="${order.id}">
+                        <option value="нове" ${order.status === 'нове' ? 'selected' : ''}>нове</option>
+                        <option value="підтверджено" ${order.status === 'підтверджено' ? 'selected' : ''}>підтверджено</option>
+                        <option value="в дорозі" ${order.status === 'в дорозі' ? 'selected' : ''}>в дорозі</option>
+                        <option value="виконано" ${order.status === 'виконано' ? 'selected' : ''}>виконано</option>
+                        <option value="скасовано" ${order.status === 'скасовано' ? 'selected' : ''}>скасовано</option>
+                    </select>
+                    ${needCallbackHtml}
+                    <button class="delete-order-btn text-red-500 hover:text-red-700 ml-2" data-id="${order.id}" title="Видалити замовлення"><i class="fas fa-trash-alt"></i></button>
                 </div>
-                <div class="mt-2"><i class="fas fa-user"></i> ${escapeHtml(order.customer.name)} (${order.customer.phone})</div>
-                <div><i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.customer.address || 'не вказано')}</div>
-                ${order.customer.comment ? `<div><i class="fas fa-comment"></i> ${escapeHtml(order.customer.comment)}</div>` : ''}
-                <div class="mt-2 text-sm"><span class="font-semibold">Товари:</span><ul class="list-disc ml-5">${order.items.map(i => `<li>${i.name} - ${i.quantity} кг × ${i.price} = ${i.total} грн</li>`).join('')}</ul></div>
-                <div class="mt-2 flex justify-between items-center">
-                    <span class="font-bold text-green-700">Сума: ${order.total} грн</span>
-                    ${!order.viewed ? '<span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Нове</span>' : ''}
-                </div>
-            `;
+            </div>
+            <div class="mt-2"><i class="fas fa-user"></i> ${escapeHtml(order.customer.name)} (${order.customer.phone})</div>
+            <div><i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.customer.address || 'не вказано')}</div>
+            ${order.customer.comment ? `<div><i class="fas fa-comment"></i> ${escapeHtml(order.customer.comment)}</div>` : ''}
+            <div class="mt-2 text-sm"><span class="font-semibold">Товари:</span><ul class="list-disc ml-5">${order.items.map(i => `<li>${i.name} - ${i.quantity} кг × ${i.price} = ${i.total} грн</li>`).join('')}</ul></div>
+            <div class="mt-2 flex justify-between items-center">
+                <span class="font-bold text-green-700">Сума: ${order.total} грн</span>
+                ${!order.viewed ? '<span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Нове</span>' : ''}
+            </div>
+        `;
                 container.appendChild(div);
+
+                // Зміна статусу
                 const statusSelect = div.querySelector('.status-select');
                 statusSelect.addEventListener('change', async (e) => {
                     await updateOrderStatus(order.id, e.target.value);
                 });
+
+                // Видалення: відкриваємо модал і зберігаємо ID
+                const deleteBtn = div.querySelector('.delete-order-btn');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.getElementById('deleteOrderModal').classList.remove('hidden');
+                    window.pendingDeleteOrderId = order.id;
+                });
+
+                // Позначення як переглянутого
                 div.addEventListener('click', async (e) => {
-                    if (e.target.tagName === 'SELECT') return;
+                    if (e.target.tagName === 'SELECT' || e.target.closest('.delete-order-btn')) return;
                     if (!order.viewed) {
                         await db.collection('orders').doc(order.id).update({ viewed: true });
                         const badgeSpan = div.querySelector('.text-xs.bg-red-100');
@@ -743,6 +780,21 @@
                 initDragDrop();
                 window.pendingImages = [];
             } else alert('Невірний пароль');
+        });
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            if (window.pendingDeleteOrderId) {
+                await deleteOrder(window.pendingDeleteOrderId);
+                document.getElementById('deleteOrderModal').classList.add('hidden');
+                window.pendingDeleteOrderId = null;
+            }
+        });
+        document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+            document.getElementById('deleteOrderModal').classList.add('hidden');
+            window.pendingDeleteOrderId = null;
+        });
+        document.getElementById('closeDeleteModalBtn').addEventListener('click', () => {
+            document.getElementById('deleteOrderModal').classList.add('hidden');
+            window.pendingDeleteOrderId = null;
         });
 
         document.getElementById('closeEditModalBtn').addEventListener('click', closeEditModal);
