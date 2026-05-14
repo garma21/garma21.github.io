@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реєстрація магазину | Фермерський кошик</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0fdf4;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-6">
+        <div class="text-center mb-6">
+            <i class="fas fa-store text-4xl text-green-600 mb-2"></i>
+            <h1 class="text-2xl font-bold text-gray-800">Реєстрація магазину</h1>
+            <p class="text-gray-500 text-sm">Заповніть дані вашого продавця</p>
+        </div>
+        <div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-1">Назва магазину *</label>
+                <input type="text" id="storeName" class="w-full border rounded-lg px-3 py-2"
+                    placeholder="Фруктовий рай">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-1">Опис магазину</label>
+                <textarea id="storeDescription" rows="3" class="w-full border rounded-lg px-3 py-2"
+                    placeholder="Розкажіть про свій бізнес..."></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-1">Посилання на логотип (URL)</label>
+                <input type="url" id="storeLogo" class="w-full border rounded-lg px-3 py-2" placeholder="https://...">
+            </div>
+            <button id="completeRegistrationBtn"
+                class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition">Завершити
+                реєстрацію</button>
+            <div id="message" class="text-red-500 text-sm mt-3 text-center"></div>
+        </div>
+        <div id="loading" class="hidden text-center mt-4"><i class="fas fa-spinner fa-spin text-green-600"></i>
+            Зачекайте...</div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfnd8GywyOO6g4DHroSayWggN8QcJ47iA",
+            authDomain: "shpak-farmer.firebaseapp.com",
+            projectId: "shpak-farmer",
+            storageBucket: "shpak-farmer.firebasestorage.app",
+            messagingSenderId: "994536266662",
+            appId: "1:994536266662:web:0b3343b2ce971b8b508d67"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const loadingDiv = document.getElementById('loading');
+        const msgDiv = document.getElementById('message');
+
+        document.getElementById('completeRegistrationBtn').addEventListener('click', async () => {
+            const storeName = document.getElementById('storeName').value.trim();
+            if (!storeName) {
+                msgDiv.innerText = 'Назва магазину обов\'язкова';
+                return;
+            }
+            const description = document.getElementById('storeDescription').value.trim();
+            const logoUrl = document.getElementById('storeLogo').value.trim();
+
+            loadingDiv.classList.remove('hidden');
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error('Користувач не авторизований');
+                // Створюємо документ продавця
+                const sellerData = {
+                    userId: user.uid,
+                    storeName: storeName,
+                    description: description,
+                    logoUrl: logoUrl,
+                    status: 'active',
+                    createdAt: new Date().toISOString()
+                };
+                const sellerRef = await db.collection('sellers').add(sellerData);
+                const sellerId = sellerRef.id;
+                // Оновлюємо документ users, додаючи sellerId
+                await db.collection('users').doc(user.uid).update({
+                    sellerId: sellerId
+                });
+                msgDiv.classList.remove('text-red-500');
+                msgDiv.classList.add('text-green-600');
+                msgDiv.innerText = 'Магазин зареєстровано! Перенаправлення...';
+                setTimeout(() => {
+                    window.location.href = 'seller-panel.html';
+                }, 1500);
+            } catch (err) {
+                msgDiv.innerText = err.message;
+            } finally {
+                loadingDiv.classList.add('hidden');
+            }
+        });
+
+        // Якщо користувач не залогінений – перенаправляємо на головну
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+
+</html>

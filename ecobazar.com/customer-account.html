@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Особистий кабінет | Фермерський кошик</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast-notify {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2c3e2f;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 40px;
+            z-index: 1000;
+            animation: fadeInOut 4s ease forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            10% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+                display: none;
+            }
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-new {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-confirmed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-shipped {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-cancelled {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .feedback-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .feedback-resolved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .feedback-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto p-6">
+        <!-- Шапка -->
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-user-circle text-3xl text-green-700"></i>
+                <h1 class="text-2xl font-bold text-gray-800">Особистий кабінет</h1>
+            </div>
+            <div class="flex gap-2">
+                <a href="index.html" class="text-sm bg-gray-200 px-3 py-1 rounded-full"><i class="fas fa-store"></i> На
+                    головну</a>
+                <button id="logoutBtn"
+                    class="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-full hover:bg-red-200"><i
+                        class="fas fa-sign-out-alt"></i> Вийти</button>
+            </div>
+        </div>
+
+        <!-- Інформація про користувача -->
+        <div class="bg-white rounded-xl shadow p-5 mb-6">
+            <h2 class="font-bold text-lg mb-2">👤 Мої дані</h2>
+            <div id="userInfo" class="text-gray-600">Завантаження...</div>
+        </div>
+
+        <!-- Вкладки -->
+        <div class="flex gap-4 border-b mb-4">
+            <button id="tabOrders" class="py-2 px-4 font-semibold text-green-700 border-b-2 border-green-600">📦 Мої
+                замовлення</button>
+            <button id="tabFeedback" class="py-2 px-4 font-semibold text-gray-500">💬 Мої звернення</button>
+        </div>
+
+        <!-- Блок замовлень -->
+        <div id="ordersBlock" class="bg-white rounded-xl shadow p-5 mb-6">
+            <h2 class="font-bold text-lg mb-3">📦 Мої замовлення</h2>
+            <div class="flex gap-3 mb-4">
+                <button id="filterAllOrders" class="px-3 py-1 rounded-full bg-green-100 text-green-700">Всі</button>
+                <button id="filterActiveOrders"
+                    class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">Активні</button>
+                <button id="filterCompletedOrders"
+                    class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">Виконані</button>
+            </div>
+            <div id="ordersListContainer" class="space-y-4 max-h-[600px] overflow-y-auto">
+                <p class="text-gray-400 text-center">Завантаження...</p>
+            </div>
+        </div>
+
+        <!-- Блок звернень (відгуки, скарги, пропозиції) -->
+        <div id="feedbackBlock" class="hidden bg-white rounded-xl shadow p-5">
+            <h2 class="font-bold text-lg mb-3">💬 Мої звернення (відгуки, скарги, пропозиції)</h2>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="fbFilterAll" class="px-3 py-1 rounded-full bg-green-100 text-green-700">Всі</button>
+                <button id="fbFilterReview" class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">Відгуки</button>
+                <button id="fbFilterComplaint" class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">Скарги</button>
+                <button id="fbFilterSuggestion"
+                    class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">Пропозиції</button>
+                <button id="fbFilterPending" class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">Очікують</button>
+                <button id="fbFilterResolved"
+                    class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">Опрацьовані</button>
+            </div>
+            <div id="feedbackListContainer" class="space-y-4 max-h-[600px] overflow-y-auto">
+                <p class="text-gray-400 text-center">Завантаження...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------- КОНФІГ FIREBASE (ВСТАВТЕ СВІЙ) ----------
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfnd8GywyOO6g4DHroSayWggN8QcJ47iA",
+            authDomain: "shpak-farmer.firebaseapp.com",
+            projectId: "shpak-farmer",
+            storageBucket: "shpak-farmer.firebasestorage.app",
+            messagingSenderId: "994536266662",
+            appId: "1:994536266662:web:0b3343b2ce971b8b508d67"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUser = null;
+        let ordersUnsubscribe = null;
+        let feedbackUnsubscribe = null;
+        let currentOrdersFilter = 'all';     // 'all', 'active', 'completed'
+        let currentFeedbackTypeFilter = 'all';   // 'all', 'review', 'complaint', 'suggestion'
+        let currentFeedbackStatusFilter = 'all'; // 'all', 'pending', 'resolved', 'rejected'
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notify';
+            toast.innerHTML = `<i class="fas fa-info-circle mr-2"></i>${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])) || ''; }
+
+        function isActiveOrder(order) {
+            return order.status !== 'виконано' && order.status !== 'скасовано';
+        }
+
+        // ---------- ЗАМОВЛЕННЯ ----------
+        function loadOrders(buyerId) {
+            if (ordersUnsubscribe) ordersUnsubscribe();
+            const q = db.collection('orders').where('buyerId', '==', buyerId).orderBy('createdAt', 'desc');
+            ordersUnsubscribe = q.onSnapshot(snapshot => {
+                if (snapshot.empty) {
+                    document.getElementById('ordersListContainer').innerHTML = '<p class="text-gray-400 text-center">У вас поки що немає замовлень.</p>';
+                    return;
+                }
+                // Групуємо за batchOrderId
+                const groups = new Map();
+                snapshot.forEach(doc => {
+                    const order = doc.data();
+                    const batchId = order.batchOrderId;
+                    if (!groups.has(batchId)) groups.set(batchId, []);
+                    groups.get(batchId).push({ id: doc.id, ...order });
+                });
+                // Фільтрація груп
+                let filteredGroups = Array.from(groups.entries());
+                if (currentOrdersFilter === 'active') {
+                    filteredGroups = filteredGroups.filter(([_, subs]) => subs.some(o => isActiveOrder(o)));
+                } else if (currentOrdersFilter === 'completed') {
+                    filteredGroups = filteredGroups.filter(([_, subs]) => subs.every(o => !isActiveOrder(o)));
+                }
+                if (filteredGroups.length === 0) {
+                    document.getElementById('ordersListContainer').innerHTML = '<p class="text-gray-400 text-center">Немає замовлень за вибраним фільтром.</p>';
+                    return;
+                }
+                let html = '';
+                for (let [batchId, suborders] of filteredGroups) {
+                    const first = suborders[0];
+                    const date = new Date(first.createdAt).toLocaleString();
+                    const total = suborders.reduce((s, o) => s + o.subtotal, 0);
+                    const allCompleted = suborders.every(o => o.status === 'виконано');
+                    const anyActive = suborders.some(o => isActiveOrder(o));
+                    let statusBadge = '';
+                    if (allCompleted) statusBadge = '<span class="status-badge status-completed">Виконано</span>';
+                    else if (anyActive) statusBadge = '<span class="status-badge status-new">Активне</span>';
+                    else statusBadge = '<span class="status-badge status-cancelled">Завершено</span>';
+                    html += `
+                        <div class="border rounded-xl p-4 bg-white shadow-sm">
+                            <div class="flex justify-between flex-wrap items-start gap-2 border-b pb-2">
+                                <div><span class="font-bold">№ ${batchId.slice(-6)}</span><span class="text-sm text-gray-500 ml-2">${date}</span></div>
+                                <div>${statusBadge} <span class="font-bold ml-2">${total} грн</span></div>
+                            </div>
+                            <div class="mt-2 text-sm">Продавці: ${suborders.map(o => o.sellerId.slice(-6)).join(', ')}</div>
+                            <button class="view-details-btn text-green-600 text-sm mt-2" data-batch="${batchId}">Детальніше</button>
+                            <div id="details-${batchId}" class="hidden mt-3 text-sm border-t pt-2 space-y-2">
+                                ${suborders.map(o => `
+                                    <div class="bg-gray-50 p-2 rounded">
+                                        <div><strong>Продавець:</strong> ${o.sellerId}</div>
+                                        <div><strong>Статус:</strong> ${o.status}</div>
+                                        <div><strong>Товари:</strong> ${o.items.map(i => `${i.name} (${i.quantity}кг)`).join(', ')}</div>
+                                        <div><strong>Адреса:</strong> ${o.customer?.address || 'не вказано'}</div>
+                                        ${o.customer?.comment ? `<div><strong>Коментар:</strong> ${escapeHtml(o.customer.comment)}</div>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                document.getElementById('ordersListContainer').innerHTML = html;
+                document.querySelectorAll('.view-details-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const batchId = btn.getAttribute('data-batch');
+                        document.getElementById(`details-${batchId}`).classList.toggle('hidden');
+                    });
+                });
+            });
+        }
+
+        // ---------- ВІДГУКИ, СКАРГИ, ПРОПОЗИЦІЇ ----------
+        function loadUserFeedback(userId) {
+            if (feedbackUnsubscribe) feedbackUnsubscribe();
+            let query = db.collection('feedbacks').where('userId', '==', userId).orderBy('createdAt', 'desc');
+            feedbackUnsubscribe = query.onSnapshot(snapshot => {
+                if (snapshot.empty) {
+                    document.getElementById('feedbackListContainer').innerHTML = '<p class="text-gray-400 text-center">У вас поки що немає звернень.</p>';
+                    return;
+                }
+                let feedbacks = [];
+                snapshot.forEach(doc => feedbacks.push({ id: doc.id, ...doc.data() }));
+                // Фільтрація за типом
+                if (currentFeedbackTypeFilter !== 'all') {
+                    feedbacks = feedbacks.filter(fb => fb.type === currentFeedbackTypeFilter);
+                }
+                // Фільтрація за статусом
+                if (currentFeedbackStatusFilter !== 'all') {
+                    feedbacks = feedbacks.filter(fb => fb.status === currentFeedbackStatusFilter);
+                }
+                if (feedbacks.length === 0) {
+                    document.getElementById('feedbackListContainer').innerHTML = '<p class="text-gray-400 text-center">Немає звернень за вибраними фільтрами.</p>';
+                    return;
+                }
+                let html = '';
+                for (const fb of feedbacks) {
+                    const typeIcon = fb.type === 'review' ? '⭐' : (fb.type === 'complaint' ? '⚠️' : '💡');
+                    const typeText = fb.type === 'review' ? 'Відгук' : (fb.type === 'complaint' ? 'Скарга' : 'Пропозиція');
+                    const statusClass = fb.status === 'pending' ? 'feedback-pending' : (fb.status === 'resolved' ? 'feedback-resolved' : 'feedback-rejected');
+                    const statusText = fb.status === 'pending' ? 'Очікує' : (fb.status === 'resolved' ? 'Опрацьовано' : 'Відхилено');
+                    const ratingHtml = fb.rating ? `<div class="text-amber-500 text-sm mt-1">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>` : '';
+                    html += `
+                        <div class="border rounded-xl p-4 bg-white shadow-sm">
+                            <div class="flex justify-between flex-wrap items-start gap-2">
+                                <div><span class="font-bold">${typeIcon} ${typeText}</span> <span class="text-xs text-gray-400 ml-2">${new Date(fb.createdAt).toLocaleString()}</span></div>
+                                <div><span class="status-badge ${statusClass}">${statusText}</span></div>
+                            </div>
+                            ${ratingHtml}
+                            <div class="mt-2 text-gray-700">${escapeHtml(fb.text)}</div>
+                            ${fb.response ? `<div class="mt-3 bg-green-50 p-2 rounded"><strong>📌 Відповідь адміністрації:</strong><br>${escapeHtml(fb.response)}</div>` : ''}
+                        </div>
+                    `;
+                }
+                document.getElementById('feedbackListContainer').innerHTML = html;
+            });
+        }
+
+        // ---------- Інформація про користувача ----------
+        async function loadUserInfo(user) {
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            const data = userDoc.data();
+            const email = user.email;
+            const name = data?.displayName || 'Покупець';
+            document.getElementById('userInfo').innerHTML = `
+                <div><i class="fas fa-envelope"></i> ${escapeHtml(email)}</div>
+                <div><i class="fas fa-user"></i> ${escapeHtml(name)}</div>
+                <div><i class="fas fa-calendar-alt"></i> На сайті з ${new Date(data?.createdAt).toLocaleDateString()}</div>
+            `;
+        }
+
+        // Вихід
+        async function logout() {
+            await auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Вкладки
+        const ordersBlock = document.getElementById('ordersBlock');
+        const feedbackBlock = document.getElementById('feedbackBlock');
+        const tabOrders = document.getElementById('tabOrders');
+        const tabFeedback = document.getElementById('tabFeedback');
+
+        function setActiveTab(tab) {
+            if (tab === 'orders') {
+                ordersBlock.classList.remove('hidden');
+                feedbackBlock.classList.add('hidden');
+                tabOrders.classList.add('border-b-2', 'border-green-600', 'text-green-700');
+                tabOrders.classList.remove('text-gray-500');
+                tabFeedback.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
+                tabFeedback.classList.add('text-gray-500');
+                if (currentUser) loadOrders(currentUser.uid);
+            } else {
+                ordersBlock.classList.add('hidden');
+                feedbackBlock.classList.remove('hidden');
+                tabFeedback.classList.add('border-b-2', 'border-green-600', 'text-green-700');
+                tabFeedback.classList.remove('text-gray-500');
+                tabOrders.classList.remove('border-b-2', 'border-green-600', 'text-green-700');
+                tabOrders.classList.add('text-gray-500');
+                if (currentUser) loadUserFeedback(currentUser.uid);
+            }
+        }
+
+        tabOrders.addEventListener('click', () => setActiveTab('orders'));
+        tabFeedback.addEventListener('click', () => setActiveTab('feedback'));
+
+        // Фільтри замовлень
+        document.getElementById('filterAllOrders').addEventListener('click', () => {
+            currentOrdersFilter = 'all';
+            document.querySelectorAll('#ordersBlock .rounded-full').forEach(btn => btn.classList.remove('bg-green-100', 'text-green-700', 'bg-gray-100', 'text-gray-700'));
+            document.getElementById('filterAllOrders').classList.add('bg-green-100', 'text-green-700');
+            if (currentUser) loadOrders(currentUser.uid);
+        });
+        document.getElementById('filterActiveOrders').addEventListener('click', () => {
+            currentOrdersFilter = 'active';
+            document.querySelectorAll('#ordersBlock .rounded-full').forEach(btn => btn.classList.remove('bg-green-100', 'text-green-700', 'bg-gray-100', 'text-gray-700'));
+            document.getElementById('filterActiveOrders').classList.add('bg-green-100', 'text-green-700');
+            if (currentUser) loadOrders(currentUser.uid);
+        });
+        document.getElementById('filterCompletedOrders').addEventListener('click', () => {
+            currentOrdersFilter = 'completed';
+            document.querySelectorAll('#ordersBlock .rounded-full').forEach(btn => btn.classList.remove('bg-green-100', 'text-green-700', 'bg-gray-100', 'text-gray-700'));
+            document.getElementById('filterCompletedOrders').classList.add('bg-green-100', 'text-green-700');
+            if (currentUser) loadOrders(currentUser.uid);
+        });
+
+        // Фільтри звернень
+        document.getElementById('fbFilterAll').addEventListener('click', () => {
+            currentFeedbackTypeFilter = 'all';
+            currentFeedbackStatusFilter = 'all';
+            document.querySelectorAll('#feedbackBlock .rounded-full').forEach(btn => btn.classList.remove('bg-green-100', 'text-green-700', 'bg-gray-100', 'text-gray-700'));
+            document.getElementById('fbFilterAll').classList.add('bg-green-100', 'text-green-700');
+            if (currentUser) loadUserFeedback(currentUser.uid);
+        });
+        document.getElementById('fbFilterReview').addEventListener('click', () => {
+            currentFeedbackTypeFilter = 'review';
+            currentFeedbackStatusFilter = 'all';
+            document.querySelectorAll('#feedbackBlock .rounded-full').forEach(btn => btn.classList.remove('bg-green-100', 'text-green-700', 'bg-gray-100', 'text-gray-700'));
+            document.getElementById('fbFilterReview').classList.add('bg-green-100', 'text-green-700');
+            if (currentUser) loadUserFeedback(currentUser.uid);
+        });
+        document.getElementById('fbFilterComplaint').addEventListener('click', () => {
+            currentFeedbackTypeFilter = 'complaint';
+            currentFeedbackStatusFilter = 'all';
+            document.querySelectorAll('#feedbackBlock .rounded-full').forEach(btn => btn.classList.remove('bg-green-100', 'text-green-700', 'bg-gray-100', 'text-gray-700'));
+            document.getElementById('fbFilterComplaint').classList.add('bg-green-100', 'text-green-700');
+            if (currentUser) loadUserFeedback(currentUser.uid);
+        });
+        document.getElementById('fbFilterSuggestion').addEventListener('click', () => {
+            currentFeedbackTypeFilter = 'suggestion';
+            currentFeedbackStatusFilter = 'all';
+            document.querySelectorAll('#feedbackBlock .rounded-full').forEach(btn => btn.classList.remove('bg-green-100', 'text-green-700', 'bg-gray-100', 'text-gray-700'));
+            document.getElementById('fbFilterSuggestion').classList.add('bg-green-100', 'text-green-700');
+            if (currentUser) loadUserFeedback(currentUser.uid);
+        });
+        document.getElementById('fbFilterPending').addEventListener('click', () => {
+            currentFeedbackTypeFilter = 'all';
+            currentFeedbackStatusFilter = 'pending';
+            document.querySelectorAll('#feedbackBlock .rounded-full').forEach(btn => btn.classList.remove('bg-green-100', 'text-green-700', 'bg-gray-100', 'text-gray-700'));
+            document.getElementById('fbFilterPending').classList.add('bg-green-100', 'text-green-700');
+            if (currentUser) loadUserFeedback(currentUser.uid);
+        });
+        document.getElementById('fbFilterResolved').addEventListener('click', () => {
+            currentFeedbackTypeFilter = 'all';
+            currentFeedbackStatusFilter = 'resolved';
+            document.querySelectorAll('#feedbackBlock .rounded-full').forEach(btn => btn.classList.remove('bg-green-100', 'text-green-700', 'bg-gray-100', 'text-gray-700'));
+            document.getElementById('fbFilterResolved').classList.add('bg-green-100', 'text-green-700');
+            if (currentUser) loadUserFeedback(currentUser.uid);
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUser = user;
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            const role = userDoc.exists ? userDoc.data().role : null;
+            if (role !== 'customer') {
+                alert("Ця сторінка тільки для покупців.");
+                window.location.href = 'index.html';
+                return;
+            }
+            loadUserInfo(user);
+            setActiveTab('orders'); // за замовчуванням показуємо замовлення
+        });
+    </script>
+</body>
+
+</html>
